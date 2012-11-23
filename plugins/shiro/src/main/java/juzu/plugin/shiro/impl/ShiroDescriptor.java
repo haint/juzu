@@ -33,38 +33,48 @@ import org.apache.shiro.util.ThreadContext;
  */
 public class ShiroDescriptor extends Descriptor
 {
-   private final Interceptor interceptor;
+   private final ShiroInterceptor interceptor;
    
    ShiroDescriptor(JSON config)
    {
-      this.interceptor = new Interceptor(config);
+      this.interceptor = new ShiroInterceptor(config);
    }
    
    public void invoke(Request request) throws ApplicationException
    {
+      Subject currentUser = null;
       if(request.getBridge().getSessionValue("currentUser") != null)
       {
-         Subject currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
-         ThreadContext.bind(currentUser);
+         currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
       }
       else
       {
          Subject.Builder builder = new Subject.Builder();
-         Subject currentUser = builder.buildSubject();
+         currentUser = builder.buildSubject();
          ShiroScoped value = new ShiroScoped(currentUser);
          request.getBridge().setSessionValue("currentUser", value);
-         ThreadContext.bind(currentUser);
       }
       
-      if(interceptor.allow(request.getContext().getMethod().getHandle().toString()))
+      //
+      ThreadContext.bind(currentUser);
+      
+      try
       {
-         request.invoke();
-      }
-      else
+         if(interceptor.allow(request))
+         {
+            request.invoke();
+         }
+         else
+         {
+            request.setResponse(Response.content(401, "Unauthorization"));
+         }
+      } catch(Exception e)
       {
-         request.setResponse(Response.content(401, "Unauthorization"));
+         e.printStackTrace();
+         request.setResponse(Response.content(401, e.getMessage()));
       }
       
+      //
       ThreadContext.unbindSubject();
    }
 }

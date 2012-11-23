@@ -18,9 +18,7 @@
 package juzu.plugin.shiro.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,7 +62,6 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    
    @Override
    public Set<Class<? extends java.lang.annotation.Annotation>> init(ProcessingContext env) {
-      //return Collections.<Class<? extends java.lang.annotation.Annotation>>singleton(Shiro.class);
       return Tools.<Class<? extends java.lang.annotation.Annotation>>set(
          Shiro.class, 
          RequiresGuest.class, 
@@ -81,7 +78,6 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
       if(key.getType().equals(new FQN(Shiro.class)))
       {
          JSON json = new JSON();
-         json.set("realms", build((List<Map<String, Object>>)added.get("realms")));
          enableMap.put(handle, json);
       }
       else 
@@ -193,27 +189,6 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    public void destroy(ApplicationMetaModel application) 
    {
       enableMap.remove(application.getHandle());
-   }
-   
-   private List<JSON> build(List<Map<String, Object>> listMap)
-   {
-      List<JSON> foo = Collections.emptyList();
-      if(listMap != null && listMap.size() > 0)
-      {
-         foo = new ArrayList<JSON>(listMap.size());
-         for(Map<String, Object> map : listMap)
-         {
-            JSON bar = new JSON();
-            for(Map.Entry<String, Object> entry : map.entrySet()) 
-            {
-               String key = entry.getKey();
-               Object value = entry.getValue();
-               bar.set(key, value);
-            }
-            foo.add(bar);
-         }
-      }
-      return foo.size() > 0 ? foo : null;
    }
    
    @Override

@@ -17,28 +17,33 @@
  */
 package juzu.plugin.shiro.impl;
 
+import java.util.Collection;
 import java.util.List;
 
 import juzu.impl.common.JSON;
+import juzu.impl.inject.spi.BeanLifeCycle;
+import juzu.impl.request.Request;
+import juzu.plugin.shiro.common.JuzuShiroTools;
+import juzu.plugin.shiro.realm.JuzuShiroRealm;
+import juzu.plugin.shiro.realm.JuzuShiroRealmHandle;
+import juzu.plugin.shiro.realm.UserHandle;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.Logical;
-import org.apache.shiro.config.Ini;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.util.Factory;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.Realm;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class Interceptor
+public class ShiroInterceptor
 {
 
-   private final JSON config;
-
-   Interceptor(JSON config)
+   private JSON config;
+   
+   ShiroInterceptor(JSON config)
    {
       this.config = config;
       init();
@@ -46,27 +51,43 @@ public class Interceptor
 
    private void init()
    {
-      Ini ini = new Ini();
-      List<JSON> realms = (List<JSON>)config.getList("realms");
-      if(realms != null && realms.size() > 0)
+      DefaultSecurityManager sm = new DefaultSecurityManager();
+      SecurityUtils.setSecurityManager(sm);
+   }
+   
+   private boolean containRealm(String realmName)
+   {
+      DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
+      Collection<Realm> realms = sm.getRealms();
+      if(realms == null || realms.size() == 0)
       {
-         if(realms.size() == 1)
+         return false;
+      }
+      for(Realm realm : realms)
+      {
+         if(realm.getName().equals(realmName)) return true;
+      }
+      return false;
+   }
+
+   public boolean allow(Request request) throws Exception
+   {
+      BeanLifeCycle bean =request.getApplication().getInjectionContext().get(JuzuShiroRealmHandle.class);
+      if(bean != null)
+      {
+         DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
+         JuzuShiroRealmHandle handle = (JuzuShiroRealmHandle)bean.get();
+         Collection<UserHandle> userHanlders = handle.getAllUserHandle();
+         for(UserHandle userHandle : userHanlders)
          {
-            JSON realm = realms.get(0);
-            String name = realm.getString("name");
-            String value = realm.getString("value");
-            ini.setSectionProperty("main", name, value);
+            if(!containRealm(userHandle.getName())) 
+             {
+                sm.setRealm(new JuzuShiroRealm(userHandle));
+             }
          }
       }
 
-      Factory<SecurityManager> factory = new IniSecurityManagerFactory(ini);
-      SecurityManager sm = factory.getInstance();
-      SecurityUtils.setSecurityManager(sm);
-   }
-
-   public boolean allow(String methodId)
-   {
-      JSON json = config.getJSON("methods").getJSON(methodId);
+      JSON json = config.getJSON("methods").getJSON(request.getContext().getMethod().getHandle().toString());
       if(json == null)
       {
          return true;
@@ -109,23 +130,16 @@ public class Interceptor
          List<String> roles = (List<String>)foo.get("value");
          if(roles.size() == 1)
          {
-            return SecurityUtils.getSubject().hasRole(roles.get(0));
+            return JuzuShiroTools.hasRole(roles.get(0));
          }
          else if(roles.size() > 1)
          {
             switch (logical)
             {
                case AND :
-                  return SecurityUtils.getSubject().hasAllRoles(roles);
+                  return JuzuShiroTools.hasAllRoles(roles.toArray(new String[roles.size()]));
                case OR :
-                  for(String role : roles)
-                  {
-                     if(SecurityUtils.getSubject().hasRole(role))
-                     {
-                        return true;
-                     }
-                  }
-                  return false;
+                  return JuzuShiroTools.hasRole(roles.toArray(new String[roles.size()]));
             }
          }
       }
@@ -142,23 +156,16 @@ public class Interceptor
          List<String> permissions = (List<String>)foo.get("value");
          if(permissions.size() == 1)
          {
-            return SecurityUtils.getSubject().isPermitted(permissions.get(0));
+            return JuzuShiroTools.isPermitted(permissions.get(0));
          }
          else if(permissions.size() > 1)
          {
             switch (logical)
             {
                case AND :
-                  return SecurityUtils.getSubject().isPermittedAll(permissions.toArray(new String[permissions.size()]));
+                  return JuzuShiroTools.isPermittedAll(permissions.toArray(new String[permissions.size()]));
                case OR :
-                  for(String permission : permissions)
-                  {
-                     if(SecurityUtils.getSubject().isPermitted(permission))
-                     {
-                        return true;
-                     }
-                  }
-                  return false;
+                  return JuzuShiroTools.isPermitted(permissions.toArray(new String[permissions.size()]));
             }
          }
       }

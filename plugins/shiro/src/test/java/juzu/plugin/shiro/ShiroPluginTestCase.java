@@ -48,7 +48,7 @@ public class ShiroPluginTestCase extends AbstractPortletTestCase
 {
    @Deployment(testable = false)
    public static WebArchive createDeployment() {
-     return createDeployment("plugin.shiro");
+     return createDeployment("plugin.shiro.authz");
    }
    
    /** . */
