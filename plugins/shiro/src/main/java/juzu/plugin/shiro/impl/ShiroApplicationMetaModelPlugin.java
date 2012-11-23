@@ -81,8 +81,7 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
       if(key.getType().equals(new FQN(Shiro.class)))
       {
          JSON json = new JSON();
-         json.set("users", build((List<Map<String, Object>>)added.get("users")));
-         json.set("roles", build((List<Map<String, Object>>)added.get("roles")));
+         json.set("realms", build((List<Map<String, Object>>)added.get("realms")));
          enableMap.put(handle, json);
       }
       else 

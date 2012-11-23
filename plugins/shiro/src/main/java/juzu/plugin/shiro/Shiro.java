@@ -31,7 +31,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.PACKAGE)
 public @interface Shiro
 {
-   User[] users() default {};
-   
-   Role[] roles() default {};
+   Realm[] realms() default {};
 }
