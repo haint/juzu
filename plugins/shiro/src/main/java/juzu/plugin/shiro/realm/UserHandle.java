@@ -15,23 +15,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro;
+package juzu.plugin.shiro.realm;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PACKAGE)
-public @interface Realm
+public interface UserHandle
 {
-   String name();
+   public String getName();
+
+   public UserInfo findUser(String username, String password);
    
-   String value();
+   public Set<String> getRoles(String username);
+   
+   public Set<String> getPermissions(String username, String role);
 }

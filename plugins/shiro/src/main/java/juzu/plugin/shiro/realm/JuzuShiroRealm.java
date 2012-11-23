@@ -15,12 +15,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro;
+package juzu.plugin.shiro.realm;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import juzu.impl.common.Tools;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -36,41 +34,45 @@ import org.apache.shiro.subject.PrincipalCollection;
  * @version $Id$
  *
  */
-public class SimpleRealm extends AuthorizingRealm
+public class JuzuShiroRealm extends AuthorizingRealm
 {
    
-   /** .  */
-   private final Map<String, AuthenticationInfo> users = new HashMap<String, AuthenticationInfo>();
+   private UserHandle handle;
    
-   /** . */
-   private final Map<String, AuthorizationInfo> roles = new HashMap<String, AuthorizationInfo>();
-   
-   @Override
-   protected void onInit()
+   public JuzuShiroRealm(UserHandle handle)
    {
-      //
-      users.put("root", new SimpleAuthenticationInfo("root", "secret".toCharArray(), getName()));
-      users.put("haint", new SimpleAuthenticationInfo("haint", "haint".toCharArray(), getName()));
-      
-      //
-      SimpleAuthorizationInfo rootRoles = new SimpleAuthorizationInfo(Tools.set("role1", "role2"));
-      rootRoles.setStringPermissions(Tools.set("test1", "test2"));
-      roles.put("root", rootRoles);
-      SimpleAuthorizationInfo userRoles = new SimpleAuthorizationInfo(Tools.set("role2"));
-      userRoles.setStringPermissions(Tools.set("test2"));
-      roles.put("haint", userRoles);
+      super();
+      this.handle = handle;
+      setName(handle.getName());
    }
-   
+
    @Override
    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
    {
-      String principal = (String)getAvailablePrincipal(principals);
-      return roles.get(principal);
+      String username = (String)getAvailablePrincipal(principals);
+      Set<String> roles = handle.getRoles(username);
+      SimpleAuthorizationInfo authzInfo = new SimpleAuthorizationInfo(roles);
+      Set<String> permissions = new HashSet<String>();
+      for(String role : roles)
+      {
+         Set<String> perms = handle.getPermissions(username, role);
+         if(perms != null && perms.size() > 0)
+         {
+            permissions.addAll(perms);
+         }
+      }
+      authzInfo.setStringPermissions(permissions);
+      return authzInfo;
    }
 
    @Override
    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
    {
-      return users.get(token.getPrincipal());
+      UserInfo userInfo = handle.findUser((String)token.getPrincipal(), new String((char[])token.getCredentials()));
+      if(userInfo == null) 
+      {
+         return null;
+      }
+      return new SimpleAuthenticationInfo(userInfo.getUserName(), userInfo.getPassword().toCharArray(), getName());
    }
 }

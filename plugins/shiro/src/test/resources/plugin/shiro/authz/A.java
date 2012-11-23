@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package plugin.shiro;
+package plugin.shiro.authz;
 
 import javax.inject.Inject;
 
@@ -47,6 +47,10 @@ import juzu.template.Template;
  */
 public class A
 {
+   
+   @Inject
+   SimpleJuzuShiroRealmHandle realmHandle;
+   
    @Route("/")
    @View
    public Response index() throws Exception 
@@ -73,6 +77,13 @@ public class A
          "<a id='loginWithRootURL' href='" + A_.changeToRootURL() +"'>loginWithRootURL</a><br/>" +
          "<a id='loginWithUserURL' href='" + A_.changeToUserURL() +"'>loginWithUserURL</a><br/>" +
          "<a id='logoutURL' href='" + A_.logoutURL() +"'>logoutURL</a><br/>");
+   }
+   
+   @View
+   @Route("/hello")
+   public Response hello(String msg)
+   {
+      return Response.ok(msg);
    }
    
    @Action
