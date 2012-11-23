@@ -29,11 +29,9 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PACKAGE)
-public @interface User
+public @interface Realm
 {
-   String username();
+   String name();
    
-   String password();
-   
-   String[] roles() default {};
+   String value();
 }

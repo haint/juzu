@@ -19,18 +19,23 @@ package juzu.plugin.shiro;
 
 import java.net.URL;
 
+import juzu.impl.common.Tools;
+import juzu.test.protocol.portlet.AbstractPortletTestCase;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.util.ThreadContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import juzu.impl.common.Tools;
-import juzu.test.protocol.portlet.AbstractPortletTestCase;
 
 
 /**
@@ -45,85 +50,155 @@ public class ShiroPluginTestCase extends AbstractPortletTestCase
    public static WebArchive createDeployment() {
      return createDeployment("plugin.shiro");
    }
+   
+   /** . */
+   private String requireGuestURL = null;
+   
+   /** . */
+   private String requireUserURL = null;
+   
+   /** . */
+   private String requireAuthcURL = null;
+   
+   /** . */
+   private String requireRoleURL = null;
+   
+   /** . */
+   private String requirePermsURL = null;
+   
+   /** . */
+   private String loginWithRootURL = null;
+   
+   /** . */
+   private String loginWithUserURL = null;
+   
+   /** . */
+   private String logoutURL = null;
+   
+   @Before
+   public void init() throws Exception
+   {
+      URL url = deploymentURL.toURI().resolve("embed/StandalonePortlet").toURL();
+      driver.get(url.toString());
+      
+      WebElement trigger = driver.findElement(By.id("requireGuestURL"));
+      requireGuestURL = trigger.getAttribute("href");
+      
+      trigger = driver.findElement(By.id("requireUserURL"));
+      requireUserURL = trigger.getAttribute("href");
+      
+      trigger = driver.findElement(By.id("requireAuthcURL"));
+      requireAuthcURL = trigger.getAttribute("href");
+      
+      trigger = driver.findElement(By.id("requireRoleURL"));
+      requireRoleURL = trigger.getAttribute("href");
+      
+      trigger = driver.findElement(By.id("requirePermsURL"));
+      requirePermsURL = trigger.getAttribute("href");
+      
+      trigger = driver.findElement(By.id("loginWithRootURL"));
+      loginWithRootURL = trigger.getAttribute("href");
+      
+      trigger = driver.findElement(By.id("loginWithUserURL"));
+      loginWithUserURL = trigger.getAttribute("href");
+      
+      trigger = driver.findElement(By.id("logoutURL"));
+      logoutURL = trigger.getAttribute("href");
+   }
+   
+   @AfterClass
+   public static void cleanup()
+   {
+      DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
+      SecurityUtils.setSecurityManager(null);
+      sm.destroy();
+      ThreadContext.remove();
+   }
 
    @ArquillianResource
    URL deploymentURL;
 
    @Drone
    WebDriver driver;
-
+   
    @Test
    @RunAsClient
-   public void test() throws Exception {
-     URL url = deploymentURL.toURI().resolve("embed/StandalonePortlet").toURL();
-     driver.get(url.toString());
-     
-     WebElement trigger = driver.findElement(By.id("guest"));
-     String guestURL = trigger.getAttribute("href");
-     
-     trigger = driver.findElement(By.id("user"));
-     String userURL = trigger.getAttribute("href");
-     
-     trigger = driver.findElement(By.id("authenticate"));
-     String authenticateURL = trigger.getAttribute("href");
-     
-     trigger = driver.findElement(By.id("role"));
-     String roleURL = trigger.getAttribute("href");
-     
-     trigger = driver.findElement(By.id("permission"));
-     String permissionURL = trigger.getAttribute("href");
-     
-     trigger = driver.findElement(By.id("changeToUser"));
-     String changeToUserURL = trigger.getAttribute("href");
-     
-     trigger = driver.findElement(By.id("changeToGuest"));
-     String changeToGuestURL = trigger.getAttribute("href");
-     
-     //Test with root 
-     driver.get(guestURL);
-     WebElement body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
-     
-     driver.get(userURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "pass"));
-     
-     driver.get(authenticateURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "pass"));
-     
-     driver.get(roleURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "pass"));
-     
-     driver.get(permissionURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "pass"));
-     
-     //Test with user
-     driver.get(changeToUserURL);
-     
-     driver.get(roleURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "pass"));
-     
-     driver.get(permissionURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
-     
-     driver.get(guestURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
-     
-     //Test with guest
-     driver.get(changeToGuestURL);
-     
-     driver.get(userURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
-     
-     driver.get(guestURL);
-     body = driver.findElement(By.tagName("body"));
-     assertEquals(1, Tools.count(body.getText(), "pass"));
+   public void testRoot()
+   {
+      driver.get(loginWithRootURL);
+      
+      driver.get(requireGuestURL);
+      WebElement body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      
+      driver.get(requireUserURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+      
+      driver.get(requireAuthcURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+      
+      driver.get(requireRoleURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+      
+      driver.get(requirePermsURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+   }
+   
+   @Test
+   @RunAsClient
+   public void testUser()
+   {
+      driver.get(loginWithUserURL);
+      
+      driver.get(requireGuestURL);
+      WebElement body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      
+      driver.get(requireUserURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+      
+      driver.get(requireAuthcURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+      
+      driver.get(requireRoleURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+      
+      driver.get(requirePermsURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+   }
+   
+   @Test
+   @RunAsClient
+   public void testGuest()
+   {
+      driver.get(logoutURL);
+      
+      driver.get(requireGuestURL);
+      WebElement body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "pass"));
+      
+      driver.get(requireUserURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      
+      driver.get(requireAuthcURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      
+      driver.get(requireRoleURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      
+      driver.get(requirePermsURL);
+      body = driver.findElement(By.tagName("body"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
    }
 }

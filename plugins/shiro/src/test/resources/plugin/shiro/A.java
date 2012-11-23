@@ -30,6 +30,7 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
 import org.apache.shiro.subject.Subject;
 
+import juzu.Action;
 import juzu.Path;
 import juzu.Resource;
 import juzu.Response;
@@ -48,83 +49,104 @@ public class A
 {
    @Route("/")
    @View
-   @RequiresGuest
    public Response index() throws Exception 
    {
       Subject subject = SecurityUtils.getSubject();
+      String info = null;
+      if(subject.isAuthenticated())
+      {
+         info = "<p>Hello <b>" + subject.getPrincipal() + "</b></p>"; 
+      }
+      else
+      {
+         info = "<p>Hello <b>Guest</b></p>"; 
+      }
+      
+      
+      return Render.ok(
+         info +
+         "<a id='requireGuestURL' href='" + A_.guestURL() +"'>requireGuestURL</a><br/>" +
+         "<a id='requireUserURL' href='" + A_.userURL() +"'>requireUserURL</a><br/>" +
+         "<a id='requireAuthcURL' href='" + A_.authenticateURL() +"'>requireAuthcURL</a><br/>" +
+         "<a id='requireRoleURL' href='" + A_.roleURL() +"'>requireRoleURL</a><br/>" +
+         "<a id='requirePermsURL' href='" + A_.permissionURL() +"'>requirePermsURL</a><br/>" +
+         "<a id='loginWithRootURL' href='" + A_.changeToRootURL() +"'>loginWithRootURL</a><br/>" +
+         "<a id='loginWithUserURL' href='" + A_.changeToUserURL() +"'>loginWithUserURL</a><br/>" +
+         "<a id='logoutURL' href='" + A_.logoutURL() +"'>logoutURL</a><br/>");
+   }
+   
+   @Action
+   @Route("/login/root")
+   public Response changeToRoot()
+   {
+      Subject subject = SecurityUtils.getSubject();
+      if(subject.isAuthenticated())
+      {
+         subject.logout();
+      }
       UsernamePasswordToken token = new UsernamePasswordToken("root", "secret");
       subject.login(token);
-      if(subject.isAuthenticated())
-      {
-         System.out.println("The application has been authenticated with " + subject);
-      }
-      return Render.ok(
-         "<a id='guest' href='" + A_.guestURL() +"'>guest</a><br/>" +
-         "<a id='user' href='" + A_.userURL() +"'>user</a><br/>" +
-         "<a id='authenticate' href='" + A_.authenticateURL() +"'>authenticate</a><br/>" +
-         "<a id='role' href='" + A_.roleURL() +"'>role</a><br/>" +
-         "<a id='permission' href='" + A_.permissionURL() +"'>permission</a><br/>" +
-         "<a id='changeToUser' href='" + A_.changeToUserURL() +"'>changeToUser</a><br/>" +
-         "<a id='changeToGuest' href='" + A_.changeToGuestURL() +"'>changeToGuest</a><br/>");
+      return A_.index();
    }
    
-   @Resource
-   @Route("/change/user")
-   public void changeToUser()
+   @Action
+   @Route("/login/user")
+   public Response changeToUser()
    {
       Subject subject = SecurityUtils.getSubject();
-      subject.logout();
+      if(subject.isAuthenticated())
+      {
+         subject.logout();
+      }
       UsernamePasswordToken token = new UsernamePasswordToken("haint", "haint");
       subject.login(token);
-      if(subject.isAuthenticated())
-      {
-         System.out.println("The application has been authenticated with " + subject);
-      }
+      return A_.index();
    }
    
-   @Resource
-   @Route("/change/guest")
-   public void changeToGuest()
+   @Action
+   @Route("/logout")
+   public Response logout()
    {
       Subject subject = SecurityUtils.getSubject();
       subject.logout();
+      return A_.index();
    }
-   
-   @RequiresGuest
+
    @View
    @Route("/guest")
+   @RequiresGuest
    public Response guest()
    {
       return Render.ok("pass");
    }
-   
-   @RequiresUser
+
    @View
-   @Route("/user")
+   @Route("/requireUser")
+   @RequiresUser
    public Response user()
    {
       return Render.ok("pass");
    }
-   
-   @RequiresAuthentication
+
    @View
-   @Route("/authenticate")
+   @Route("/requireAuthc")
+   @RequiresAuthentication
    public Response authenticate()
    {
       return Render.ok("pass");
    }
-   
-   @RequiresPermissions(value={"test1", "test2"}, logical=Logical.AND)
+
    @View
-   @Route("/permission")
+   @Route("/requirePerm")
+   @RequiresPermissions(value={"test1", "test2"}, logical=Logical.AND)
    public Response permission()
    {
       return Render.ok("pass");
    }
-   
-   @RequiresRoles(value={"role1", "role2"}, logical=Logical.OR)
+
    @View
-   @Route("/role")
+   @Route("/requireRole")
+   @RequiresRoles(value={"role1", "role2"}, logical=Logical.OR)
    public Response role()
    {
       return Render.ok("pass");

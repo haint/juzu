@@ -1,14 +1,18 @@
 @Application
 @Shiro(
-   users = {
+   /*users = {
       @User(username = "root", password = "secret", roles = {"role1", "role2"}),
       @User(username = "haint", password = "haint", roles = {"role2"})
-   },
+   },*/
+   
+   realms = {
+      @Realm(name = "myRealm", value="juzu.plugin.shiro.SimpleRealm")
+   }/*,
    
    roles = {
       @Role(name = "role1", permissions = {"test1", "test2"}),
       @Role(name = "role2", permissions = {"test2"})
-   }
+   }*/
 )
 package plugin.shiro;
 
