@@ -36,7 +36,17 @@
 
   <build>
     <finalName>shiro-web</finalName>
-    <plugins>
+		<plugins>
+
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>maven-jetty-plugin</artifactId>
+				<version>6.1.10</version>
+				<configuration>
+					<contextPath>/</contextPath>
+					<webApp>${project.build.directory}/shiro-web-tomcat.war</webApp>
+				</configuration>
+			</plugin>
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>

@@ -23,14 +23,15 @@ import java.util.Set;
 
 import juzu.impl.common.Builder;
 import juzu.impl.common.Tools;
-import juzu.plugin.shiro.realm.UserInfo;
+import juzu.plugin.shiro.mgt.UserInfo;
+import juzu.plugin.shiro.mgt.UserHandle;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class SimpleUserHandle implements juzu.plugin.shiro.realm.UserHandle
+public class SimpleUserHandle implements UserHandle
 {
    /** .  */
    private final Map<String, UserInfo> users = new HashMap<String, UserInfo>();

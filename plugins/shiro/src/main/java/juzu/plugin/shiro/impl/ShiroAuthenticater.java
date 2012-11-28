@@ -19,17 +19,18 @@ package juzu.plugin.shiro.impl;
 
 import java.util.List;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
-
 import juzu.Response;
 import juzu.impl.common.JSON;
 import juzu.impl.plugin.controller.descriptor.MethodDescriptor;
 import juzu.impl.request.Request;
+import juzu.plugin.shiro.mgt.JuzuRememberMe;
 import juzu.request.MimeContext;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.subject.Subject;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -44,12 +45,27 @@ public class ShiroAuthenticater
    /** . */
    private String loginFailedURL;
    
+   /** . */
+   private boolean rememberMe;
+   
    public ShiroAuthenticater(JSON config)
    {
+      this.rememberMe = Boolean.valueOf(config.getString("rememberMe"));
       this.config = config;
+      init();
    }
    
-   public Request invoke(Request request)
+   private void init()
+   {
+      DefaultSecurityManager sm = new DefaultSecurityManager();
+      if(rememberMe)
+      {
+         sm.setRememberMeManager(new JuzuRememberMe());
+      }
+      SecurityUtils.setSecurityManager(sm);
+   }
+   
+   private void onStart(Request request)
    {
       String loginFailedMethodId = config.getString("loginFailed");
       if(loginFailedURL == null && loginFailedMethodId != null)
@@ -63,6 +79,12 @@ public class ShiroAuthenticater
             }
          }
       }
+   }
+   
+   public Request invoke(Request request)
+   {
+      //
+      onStart(request);
       
       JSON json = config.getJSON("methods").getJSON(request.getContext().getMethod().getHandle().toString());
       if(json == null)
@@ -71,16 +93,19 @@ public class ShiroAuthenticater
       }
       
       Subject subject = SecurityUtils.getSubject();
-      if(subject.isAuthenticated())
+      if(subject.isAuthenticated() || subject.getPrincipal() != null)
       {
          if(json.get("logout") != null && json.getBoolean("logout"))
          {
             subject.logout();
-            return request;
-         }
-         else
-         {
-            return request;
+            if(!rememberMe)
+            {
+               return request;
+            }
+            else
+            {
+               return null;
+            }
          }
       }
       
@@ -88,10 +113,14 @@ public class ShiroAuthenticater
       {
          String username = request.getParameters().get(json.getString("username"))[0];
          String password = request.getParameters().get(json.getString("password"))[0];
+         boolean remember = request.getParameters().get(json.getString("rememberMe")) != null ? true : false;
          try
          {
-            subject.login(new UsernamePasswordToken(username, password.toCharArray()));
-            return request;
+            subject.login(new UsernamePasswordToken(username, password.toCharArray(), remember));
+            if(!remember)
+            {
+               return request;
+            }
          }
          catch (AuthenticationException e)
          {
@@ -103,8 +132,8 @@ public class ShiroAuthenticater
             {
                request.setResponse(Response.redirect(loginFailedURL));
             }
-            return null;
          }
+         return null;
       }
       
       return request;

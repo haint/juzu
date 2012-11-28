@@ -15,18 +15,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro.realm;
+package juzu.plugin.shiro.mgt;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public interface RealmHandle
+public interface UserHandle
 {
-   public Collection<UserHandle> getAllUserHandle();
+   public String getName();
+
+   public UserInfo findUser(String username, String password);
    
-   public UserHandle getUserHandleByName(String name);
+   public Set<String> getRoles(String username);
+   
+   public Set<String> getPermissions(String username, String role);
 }
