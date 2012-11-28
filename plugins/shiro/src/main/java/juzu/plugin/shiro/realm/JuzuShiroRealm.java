@@ -36,7 +36,7 @@ import org.apache.shiro.subject.PrincipalCollection;
  */
 public class JuzuShiroRealm extends AuthorizingRealm
 {
-   
+   /** . */
    private UserHandle handle;
    
    public JuzuShiroRealm(UserHandle handle)

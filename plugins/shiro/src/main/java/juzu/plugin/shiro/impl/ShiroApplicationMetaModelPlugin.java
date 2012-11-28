@@ -34,6 +34,9 @@ import juzu.impl.plugin.application.metamodel.ApplicationMetaModelPlugin;
 import juzu.impl.plugin.controller.metamodel.ControllerMetaModel;
 import juzu.impl.plugin.controller.metamodel.ControllersMetaModel;
 import juzu.impl.plugin.controller.metamodel.MethodMetaModel;
+import juzu.plugin.shiro.Login;
+import juzu.plugin.shiro.LoginFailed;
+import juzu.plugin.shiro.Logout;
 import juzu.plugin.shiro.Shiro;
 
 import org.apache.shiro.authz.annotation.Logical;
@@ -50,10 +53,14 @@ import org.apache.shiro.authz.annotation.RequiresUser;
  */
 public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
 {
-   
+   /** . */
    private final Map<ElementHandle.Package, JSON> enableMap = new HashMap<ElementHandle.Package, JSON>();
    
+   /** . */
    private final Map<ElementHandle<?>, Map<AnnotationKey, AnnotationState>> methods = new HashMap<ElementHandle<?>, Map<AnnotationKey, AnnotationState>>();
+   
+   /** . */
+   private String loginFailedMethodId = null;
    
    public ShiroApplicationMetaModelPlugin()
    {
@@ -68,7 +75,10 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          RequiresUser.class,
          RequiresAuthentication.class,
          RequiresPermissions.class, 
-         RequiresRoles.class);
+         RequiresRoles.class,
+         Login.class,
+         LoginFailed.class,
+         Logout.class);
     }
    
    @Override
@@ -91,7 +101,10 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
                key.getType().equals(new FQN(RequiresUser.class)) ||
                key.getType().equals(new FQN(RequiresAuthentication.class)) ||
                key.getType().equals(new FQN(RequiresRoles.class)) ||
-               key.getType().equals(new FQN(RequiresPermissions.class)))
+               key.getType().equals(new FQN(RequiresPermissions.class)) ||
+               key.getType().equals(new FQN(Login.class)) ||
+               key.getType().equals(new FQN(LoginFailed.class)) ||
+               key.getType().equals(new FQN(Logout.class)))
       {
          if(key.getElement() instanceof ElementHandle.Method)
          {
@@ -108,6 +121,20 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    
    private void emitConfig(JSON json, AnnotationKey key, AnnotationState added)
    {
+      if(key.getType().equals(new FQN(Login.class)))
+      {
+         json.set("login", true);
+         json.set("username", added.get("usernameParamName") == null ? "username" : added.get("usernameParamName"));
+         json.set("password", added.get("passwordParamName") == null ? "password" : added.get("passwordParamName"));
+      }
+      else if(key.getType().equals(new FQN(LoginFailed.class)))
+      {
+         loginFailedMethodId = ((ElementHandle.Method)key.getElement()).getMethodHandle().toString();
+      }
+      else if(key.getType().equals(new FQN(Logout.class)))
+      {
+         json.set("logout", true);
+      }
       if(key.getType().equals(new FQN(RequiresGuest.class)))
       {
          json.set("guest", true);
@@ -168,20 +195,23 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
             for(MethodMetaModel method : controller)
             {
                Map<AnnotationKey, AnnotationState> annotations = methods.get(method.getHandle());
-               if(annotations == null) 
+               if(annotations != null) 
                {
-                  continue;
+                  JSON bar = new JSON();
+                  for(Map.Entry<AnnotationKey, AnnotationState> entry : annotations.entrySet())
+                  {
+                     emitConfig(bar, entry.getKey(), entry.getValue());
+                  }
+                  foo.set(method.getHandle().getMethodHandle().toString(), bar);
                }
-               
-               JSON bar = new JSON();
-               for(Map.Entry<AnnotationKey, AnnotationState> entry : annotations.entrySet())
-               {
-                  emitConfig(bar, entry.getKey(), entry.getValue());
-               }
-               foo.set(method.getHandle().getMethodHandle().toString(), bar);
             }
          }
          config.set("methods", foo);
+         
+         if(loginFailedMethodId != null)
+         {
+            config.set("loginFailed", loginFailedMethodId);
+         }
       }
    }
    

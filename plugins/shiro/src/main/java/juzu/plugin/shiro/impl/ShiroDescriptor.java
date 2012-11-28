@@ -23,9 +23,6 @@ import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
 
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
-
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
@@ -33,48 +30,39 @@ import org.apache.shiro.util.ThreadContext;
  */
 public class ShiroDescriptor extends Descriptor
 {
-   private final ShiroInterceptor interceptor;
+   /** . */
+   private final ShiroAuthorizer authorizer;
+   
+   /** . */
+   private final ShiroAuthenticater authenticater;
    
    ShiroDescriptor(JSON config)
    {
-      this.interceptor = new ShiroInterceptor(config);
+      this.authorizer = new ShiroAuthorizer(config);
+      this.authenticater = new ShiroAuthenticater(config);
    }
    
    public void invoke(Request request) throws ApplicationException
    {
-      Subject currentUser = null;
-      if(request.getBridge().getSessionValue("currentUser") != null)
-      {
-         currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
-      }
-      else
-      {
-         Subject.Builder builder = new Subject.Builder();
-         currentUser = builder.buildSubject();
-         ShiroScoped value = new ShiroScoped(currentUser);
-         request.getBridge().setSessionValue("currentUser", value);
-      }
-      
-      //
-      ThreadContext.bind(currentUser);
-      
       try
       {
-         if(interceptor.allow(request))
+         //
+         ShiroRequestLifecycle.begin(request);
+         
+         //
+         if(authenticater.invoke(request) != null) 
          {
-            request.invoke();
+            authorizer.invoke(request);
          }
-         else
-         {
-            request.setResponse(Response.content(401, "Unauthorization"));
-         }
-      } catch(Exception e)
+      } 
+      catch(Exception e)
       {
          e.printStackTrace();
-         request.setResponse(Response.content(401, e.getMessage()));
+         request.setResponse(Response.content(500, e.getMessage()));
       }
-      
-      //
-      ThreadContext.unbindSubject();
+      finally
+      {
+         ShiroRequestLifecycle.end(request);
+      }
    }
 }

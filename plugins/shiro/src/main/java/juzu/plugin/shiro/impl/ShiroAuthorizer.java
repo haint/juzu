@@ -17,33 +17,28 @@
  */
 package juzu.plugin.shiro.impl;
 
-import java.util.Collection;
 import java.util.List;
 
+import juzu.Response;
 import juzu.impl.common.JSON;
-import juzu.impl.inject.spi.BeanLifeCycle;
 import juzu.impl.request.Request;
-import juzu.plugin.shiro.common.JuzuShiroTools;
-import juzu.plugin.shiro.realm.JuzuShiroRealm;
-import juzu.plugin.shiro.realm.JuzuShiroRealmHandle;
-import juzu.plugin.shiro.realm.UserHandle;
+import juzu.plugin.shiro.common.ShiroTools;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.realm.Realm;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class ShiroInterceptor
+public class ShiroAuthorizer
 {
-
-   private JSON config;
+   /** . */
+   private final JSON config;
    
-   ShiroInterceptor(JSON config)
+   ShiroAuthorizer(JSON config)
    {
       this.config = config;
       init();
@@ -55,38 +50,20 @@ public class ShiroInterceptor
       SecurityUtils.setSecurityManager(sm);
    }
    
-   private boolean containRealm(String realmName)
+   public void invoke(Request request)
    {
-      DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
-      Collection<Realm> realms = sm.getRealms();
-      if(realms == null || realms.size() == 0)
+      if(allow(request))
       {
-         return false;
+         request.invoke();
       }
-      for(Realm realm : realms)
+      else
       {
-         if(realm.getName().equals(realmName)) return true;
+         request.setResponse(Response.content(401, "Unauthorized"));
       }
-      return false;
    }
-
-   public boolean allow(Request request) throws Exception
+   
+   private boolean allow(Request request)
    {
-      BeanLifeCycle bean =request.getApplication().getInjectionContext().get(JuzuShiroRealmHandle.class);
-      if(bean != null)
-      {
-         DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
-         JuzuShiroRealmHandle handle = (JuzuShiroRealmHandle)bean.get();
-         Collection<UserHandle> userHanlders = handle.getAllUserHandle();
-         for(UserHandle userHandle : userHanlders)
-         {
-            if(!containRealm(userHandle.getName())) 
-             {
-                sm.setRealm(new JuzuShiroRealm(userHandle));
-             }
-         }
-      }
-
       JSON json = config.getJSON("methods").getJSON(request.getContext().getMethod().getHandle().toString());
       if(json == null)
       {
@@ -130,16 +107,16 @@ public class ShiroInterceptor
          List<String> roles = (List<String>)foo.get("value");
          if(roles.size() == 1)
          {
-            return JuzuShiroTools.hasRole(roles.get(0));
+            return ShiroTools.hasRole(roles.get(0));
          }
          else if(roles.size() > 1)
          {
             switch (logical)
             {
                case AND :
-                  return JuzuShiroTools.hasAllRoles(roles.toArray(new String[roles.size()]));
+                  return ShiroTools.hasAllRoles(roles.toArray(new String[roles.size()]));
                case OR :
-                  return JuzuShiroTools.hasRole(roles.toArray(new String[roles.size()]));
+                  return ShiroTools.hasRole(roles.toArray(new String[roles.size()]));
             }
          }
       }
@@ -156,16 +133,16 @@ public class ShiroInterceptor
          List<String> permissions = (List<String>)foo.get("value");
          if(permissions.size() == 1)
          {
-            return JuzuShiroTools.isPermitted(permissions.get(0));
+            return ShiroTools.isPermitted(permissions.get(0));
          }
          else if(permissions.size() > 1)
          {
             switch (logical)
             {
                case AND :
-                  return JuzuShiroTools.isPermittedAll(permissions.toArray(new String[permissions.size()]));
+                  return ShiroTools.isPermittedAll(permissions.toArray(new String[permissions.size()]));
                case OR :
-                  return JuzuShiroTools.isPermitted(permissions.toArray(new String[permissions.size()]));
+                  return ShiroTools.isPermitted(permissions.toArray(new String[permissions.size()]));
             }
          }
       }

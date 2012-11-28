@@ -31,6 +31,7 @@ import juzu.impl.request.RequestFilter;
  */
 public class ShiroApplicationPlugin extends ApplicationPlugin implements RequestFilter
 {
+   /** . */
    private ShiroDescriptor descriptor;
    
    public ShiroApplicationPlugin()
