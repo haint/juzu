@@ -26,7 +26,6 @@ import juzu.plugin.shiro.common.ShiroTools;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.Logical;
-import org.apache.shiro.mgt.DefaultSecurityManager;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -38,18 +37,15 @@ public class ShiroAuthorizer
    /** . */
    private final JSON config;
    
+   /** . */
+   private boolean redirectToLoginForm;
+   
    ShiroAuthorizer(JSON config)
    {
+      this.redirectToLoginForm = Boolean.valueOf(config.getString("redirectToLoginForm"));
       this.config = config;
-      init();
    }
 
-   private void init()
-   {
-      DefaultSecurityManager sm = new DefaultSecurityManager();
-      SecurityUtils.setSecurityManager(sm);
-   }
-   
    public void invoke(Request request)
    {
       if(allow(request))

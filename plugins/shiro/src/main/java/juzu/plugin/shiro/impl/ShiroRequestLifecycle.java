@@ -28,9 +28,9 @@ import org.apache.shiro.util.ThreadContext;
 import juzu.impl.inject.spi.BeanLifeCycle;
 import juzu.impl.request.Request;
 import juzu.plugin.shiro.common.ShiroTools;
-import juzu.plugin.shiro.realm.JuzuShiroRealm;
-import juzu.plugin.shiro.realm.RealmHandle;
-import juzu.plugin.shiro.realm.UserHandle;
+import juzu.plugin.shiro.mgt.JuzuShiroRealm;
+import juzu.plugin.shiro.mgt.RealmHandle;
+import juzu.plugin.shiro.mgt.UserHandle;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

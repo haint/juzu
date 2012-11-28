@@ -34,4 +34,6 @@ public @interface Login
    String usernameParamName() default "username";
    
    String passwordParamName() default "password";
+   
+   String rememberMeParamName() default "rememberMe";
 }

@@ -88,6 +88,8 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
       if(key.getType().equals(new FQN(Shiro.class)))
       {
          JSON json = new JSON();
+         json.set("rememberMe", added.get("rememberMe") != null ? "true" : "false");
+         json.set("redirectToLoginForm", added.get("redirectToLoginForm") != null ? "true" : "false");
          enableMap.put(handle, json);
       }
       else 
@@ -126,6 +128,7 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          json.set("login", true);
          json.set("username", added.get("usernameParamName") == null ? "username" : added.get("usernameParamName"));
          json.set("password", added.get("passwordParamName") == null ? "password" : added.get("passwordParamName"));
+         json.set("rememberMe", added.get("rememberMeParamName") == null ? "rememberMe" : added.get("rememberMeParamName"));
       }
       else if(key.getType().equals(new FQN(LoginFailed.class)))
       {
