@@ -18,17 +18,19 @@
 package juzu.plugin.shiro.common;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
- * This is a tool to wrap the Shiro Subject for decouple between the business code with the Shiro core
  */
-public class JuzuShiroTools
+public class ShiroTools
 {
 
    /**
@@ -120,6 +122,21 @@ public class JuzuShiroTools
          {
             return true;
          }
+      }
+      return false;
+   }
+   
+   public static boolean containRealm(String realmName)
+   {
+      DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
+      Collection<Realm> realms = sm.getRealms();
+      if(realms == null || realms.size() == 0)
+      {
+         return false;
+      }
+      for(Realm realm : realms)
+      {
+         if(realm.getName().equals(realmName)) return true;
       }
       return false;
    }

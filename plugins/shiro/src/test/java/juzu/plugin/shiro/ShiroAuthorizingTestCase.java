@@ -44,7 +44,7 @@ import org.openqa.selenium.WebElement;
  *
  */
 
-public class ShiroPluginTestCase extends AbstractPortletTestCase
+public class ShiroAuthorizingTestCase extends AbstractPortletTestCase
 {
    @Deployment(testable = false)
    public static WebArchive createDeployment() {
@@ -129,7 +129,7 @@ public class ShiroPluginTestCase extends AbstractPortletTestCase
       
       driver.get(requireGuestURL);
       WebElement body = driver.findElement(By.tagName("body"));
-      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorized"));
       
       driver.get(requireUserURL);
       body = driver.findElement(By.tagName("body"));
@@ -156,7 +156,7 @@ public class ShiroPluginTestCase extends AbstractPortletTestCase
       
       driver.get(requireGuestURL);
       WebElement body = driver.findElement(By.tagName("body"));
-      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorized"));
       
       driver.get(requireUserURL);
       body = driver.findElement(By.tagName("body"));
@@ -172,7 +172,7 @@ public class ShiroPluginTestCase extends AbstractPortletTestCase
       
       driver.get(requirePermsURL);
       body = driver.findElement(By.tagName("body"));
-      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorized"));
    }
    
    @Test
@@ -187,18 +187,18 @@ public class ShiroPluginTestCase extends AbstractPortletTestCase
       
       driver.get(requireUserURL);
       body = driver.findElement(By.tagName("body"));
-      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorized"));
       
       driver.get(requireAuthcURL);
       body = driver.findElement(By.tagName("body"));
-      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorized"));
       
       driver.get(requireRoleURL);
       body = driver.findElement(By.tagName("body"));
-      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorized"));
       
       driver.get(requirePermsURL);
       body = driver.findElement(By.tagName("body"));
-      assertEquals(1, Tools.count(body.getText(), "Unauthorization"));
+      assertEquals(1, Tools.count(body.getText(), "Unauthorized"));
    }
 }

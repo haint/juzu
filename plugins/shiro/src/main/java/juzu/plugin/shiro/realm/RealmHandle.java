@@ -15,41 +15,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package juzu.plugin.shiro.realm;
 
-package plugin.shiro.authz;
-
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import juzu.plugin.shiro.realm.JuzuShiroRealmHandle;
-import juzu.plugin.shiro.realm.UserHandle;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class SimpleJuzuShiroRealmHandle implements JuzuShiroRealmHandle
+public interface RealmHandle
 {
-
-   private Map<String, UserHandle> handlers = new HashMap<String, UserHandle>();
+   public Collection<UserHandle> getAllUserHandle();
    
-   public SimpleJuzuShiroRealmHandle()
-   {
-      UserHandle userHandle = new SimpleUserHandle();
-      handlers.put(userHandle.getName(), userHandle);
-   }
-   
-   public Collection<UserHandle> getAllUserHandle()
-   {
-      return handlers.values();
-   }
-   
-   public UserHandle getUserHandleByName(String name)
-   {
-      return handlers.get(name);
-   }
+   public UserHandle getUserHandleByName(String name);
 }

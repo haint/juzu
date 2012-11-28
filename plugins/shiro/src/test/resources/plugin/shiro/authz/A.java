@@ -19,7 +19,6 @@ package plugin.shiro.authz;
 
 import javax.inject.Inject;
 
-import org.apache.catalina.security.SecurityUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.annotation.Logical;
@@ -47,9 +46,8 @@ import juzu.template.Template;
  */
 public class A
 {
-   
    @Inject
-   SimpleJuzuShiroRealmHandle realmHandle;
+   SimpleUserHandle userHandle;
    
    @Route("/")
    @View
