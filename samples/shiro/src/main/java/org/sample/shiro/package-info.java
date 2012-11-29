@@ -6,7 +6,7 @@
       @Stylesheet(src="css/style.css", location=AssetLocation.SERVER)
    }
 )
-@Shiro(rememberMe=true)
+@Shiro(rememberMe = true,  redirectToLoginForm = true)
 package org.sample.shiro;
 
 import juzu.Application;

@@ -36,6 +36,7 @@ import juzu.impl.plugin.controller.metamodel.ControllersMetaModel;
 import juzu.impl.plugin.controller.metamodel.MethodMetaModel;
 import juzu.plugin.shiro.Login;
 import juzu.plugin.shiro.LoginFailed;
+import juzu.plugin.shiro.LoginForm;
 import juzu.plugin.shiro.Logout;
 import juzu.plugin.shiro.Shiro;
 
@@ -62,6 +63,9 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    /** . */
    private String loginFailedMethodId = null;
    
+   /** . */
+   private String loginFormMethodId = null;
+   
    public ShiroApplicationMetaModelPlugin()
    {
       super("shiro");
@@ -78,7 +82,8 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          RequiresRoles.class,
          Login.class,
          LoginFailed.class,
-         Logout.class);
+         Logout.class,
+         LoginForm.class);
     }
    
    @Override
@@ -106,7 +111,8 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
                key.getType().equals(new FQN(RequiresPermissions.class)) ||
                key.getType().equals(new FQN(Login.class)) ||
                key.getType().equals(new FQN(LoginFailed.class)) ||
-               key.getType().equals(new FQN(Logout.class)))
+               key.getType().equals(new FQN(Logout.class)) ||
+               key.getType().equals(new FQN(LoginForm.class)))
       {
          if(key.getElement() instanceof ElementHandle.Method)
          {
@@ -133,6 +139,10 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
       else if(key.getType().equals(new FQN(LoginFailed.class)))
       {
          loginFailedMethodId = ((ElementHandle.Method)key.getElement()).getMethodHandle().toString();
+      }
+      else if(key.getType().equals(new FQN(LoginForm.class)))
+      {
+         loginFormMethodId = ((ElementHandle.Method)key.getElement()).getMethodHandle().toString();
       }
       else if(key.getType().equals(new FQN(Logout.class)))
       {
@@ -214,6 +224,10 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          if(loginFailedMethodId != null)
          {
             config.set("loginFailed", loginFailedMethodId);
+         }
+         if(loginFormMethodId != null)
+         {
+            config.set("loginForm", loginFormMethodId);
          }
       }
    }
