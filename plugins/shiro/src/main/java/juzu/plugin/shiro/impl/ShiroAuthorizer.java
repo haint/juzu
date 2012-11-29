@@ -17,10 +17,15 @@
  */
 package juzu.plugin.shiro.impl;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import juzu.Response;
+import juzu.Response.Render;
+import juzu.asset.Asset;
 import juzu.impl.common.JSON;
+import juzu.impl.plugin.controller.descriptor.MethodDescriptor;
 import juzu.impl.request.Request;
 import juzu.plugin.shiro.common.ShiroTools;
 
@@ -40,10 +45,51 @@ public class ShiroAuthorizer
    /** . */
    private boolean redirectToLoginForm;
    
+   /** . */
+   private Response previousResponse = null;
+   
    ShiroAuthorizer(JSON config)
    {
       this.redirectToLoginForm = Boolean.valueOf(config.getString("redirectToLoginForm"));
       this.config = config;
+   }
+   
+   private void sendToLoginForm(Request request)
+   {
+      String loginFormMethodId = config.getString("loginForm");
+      if(loginFormMethodId != null)
+      {
+         List<MethodDescriptor> methods = request.getApplication().getDescriptor().getControllers().getMethods();
+         for(MethodDescriptor method : methods)
+         {
+            if(method.getHandle().toString().equals(loginFormMethodId))
+            {
+               Request loginFormRequest = new Request(request.getApplication(), method, Collections.EMPTY_MAP, new Object[]{}, request.getBridge());
+               loginFormRequest.invoke();
+               if(previousResponse != null)
+               {
+                  Response.Render render = (Response.Render) previousResponse;
+                  Iterable<Asset> scripts = render.getScripts();
+                  Iterable<Asset> stylesheets = render.getStylesheets();
+                  Response.Render current = (Render)loginFormRequest.getResponse();
+                  if(scripts != null)
+                  {
+                     for(Iterator<Asset> i = scripts.iterator(); i.hasNext();)
+                     {
+                        current.addScript(i.next());
+                     }
+                  }
+                  if(stylesheets != null)
+                  {
+                     for(Iterator<Asset> i = stylesheets.iterator(); i.hasNext();)
+                     {
+                        current.addStylesheet(i.next());
+                     }
+                  }
+               }
+            }
+         }
+      }
    }
 
    public void invoke(Request request)
@@ -51,10 +97,22 @@ public class ShiroAuthorizer
       if(allow(request))
       {
          request.invoke();
+         Response response = request.getResponse();
+         if(response instanceof Response.Render)
+         {
+            previousResponse = response;
+         }
       }
       else
       {
-         request.setResponse(Response.content(401, "Unauthorized"));
+         if(redirectToLoginForm)
+         {
+            sendToLoginForm(request);
+         }
+         else
+         {
+            request.setResponse(Response.content(401, "Unauthorized"));
+         }
       }
    }
    

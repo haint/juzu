@@ -28,6 +28,7 @@ import juzu.Route;
 import juzu.View;
 import juzu.plugin.shiro.Login;
 import juzu.plugin.shiro.LoginFailed;
+import juzu.plugin.shiro.LoginForm;
 import juzu.plugin.shiro.Logout;
 import juzu.plugin.shiro.common.ShiroTools;
 import juzu.template.Template;
@@ -77,7 +78,7 @@ public class Controller
    
    @Inject @Path("loginform.gtmpl") Template loginForm;
    
-   @View @Route("/loginForm") @RequiresGuest
+   @View @Route("/loginForm") @RequiresGuest @LoginForm
    public void loginForm()
    {
       loginForm.render();

@@ -63,7 +63,6 @@ public class ShiroDescriptor extends Descriptor
       finally
       {
          ShiroRequestLifecycle.end(request);
-         //request.getResponse().withHeader("Set-Cookie", "rememberMe=wlmwJ0hIRsw9Fyl8Ap3weZjtuWG4N6EbbMNDpgsrwMWFxEUzXQNRbEduHF1jW6owLakFzfx3Rs9Iu3x+My7gJvJlJf2pFeB6xuNtW3ameAS+u+0Hh9WVycKC3KUFFNB1PSRa2ebSweVqcECR4ydV+Ezy0/8juGPFGDRxF2y8Zeexl3HKZivhnaPCXox9AObO2aIDWmF5BJODoIE+w+WB4/5y3bgUIGDiLwxV5Jsj+l++/fBu3z7g4bDjiaPJy7OO8PB2K0M/93KAEa141+IgBocvVn5mEXpkhKptYRp2Ut8c8t/VY7BvTncboI9Rc+3oMhWKDEiOxSVYshBwBKYE3C6fzqJrldf3eLuh5Gkg5UbIegTmBDBYa6x6UJYoGh1yrDi7mzJKXI1yL3DP7upj9lPDGPIpkkaY9RIgs2jJOYSFzNxxtgwse6XMq247TOR20YAO4cGPc7OaWIceBKTcdbbqfy2B5sDKIKQXaYgMrjWr2dOtr2FpGJUua7FLSukR; Path=/; Max-Age=31536000; Expires=Thu, 28-Nov-2013 10:04:05 GMT; HttpOnly");
       }
    }
 }
