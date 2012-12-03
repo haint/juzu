@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import juzu.impl.common.FQN;
+import juzu.impl.common.Name;
 import juzu.impl.common.JSON;
 import juzu.impl.common.Tools;
 import juzu.impl.compiler.ElementHandle;
@@ -90,7 +90,7 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    public void processAnnotationAdded(ApplicationMetaModel metaModel, AnnotationKey key, AnnotationState added) 
    {
       ElementHandle.Package handle = metaModel.getHandle();
-      if(key.getType().equals(new FQN(Shiro.class)))
+      if(key.getType().equals(Name.create(Shiro.class)))
       {
          JSON json = new JSON();
          json.set("rememberMe", added.get("rememberMe") != null ? "true" : "false");
@@ -104,15 +104,15 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    }
    
    private void emitConfig(AnnotationKey key, AnnotationState added) {
-      if (key.getType().equals(new FQN(RequiresGuest.class)) ||
-               key.getType().equals(new FQN(RequiresUser.class)) ||
-               key.getType().equals(new FQN(RequiresAuthentication.class)) ||
-               key.getType().equals(new FQN(RequiresRoles.class)) ||
-               key.getType().equals(new FQN(RequiresPermissions.class)) ||
-               key.getType().equals(new FQN(Login.class)) ||
-               key.getType().equals(new FQN(LoginFailed.class)) ||
-               key.getType().equals(new FQN(Logout.class)) ||
-               key.getType().equals(new FQN(LoginForm.class)))
+      if (key.getType().equals(Name.create(RequiresGuest.class)) ||
+               key.getType().equals(Name.create(RequiresUser.class)) ||
+               key.getType().equals(Name.create(RequiresAuthentication.class)) ||
+               key.getType().equals(Name.create(RequiresRoles.class)) ||
+               key.getType().equals(Name.create(RequiresPermissions.class)) ||
+               key.getType().equals(Name.create(Login.class)) ||
+               key.getType().equals(Name.create(LoginFailed.class)) ||
+               key.getType().equals(Name.create(Logout.class)) ||
+               key.getType().equals(Name.create(LoginForm.class)))
       {
          if(key.getElement() instanceof ElementHandle.Method)
          {
@@ -129,38 +129,38 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    
    private void emitConfig(JSON json, AnnotationKey key, AnnotationState added)
    {
-      if(key.getType().equals(new FQN(Login.class)))
+      if(key.getType().equals(Name.create(Login.class)))
       {
          json.set("login", true);
          json.set("username", added.get("usernameParamName") == null ? "username" : added.get("usernameParamName"));
          json.set("password", added.get("passwordParamName") == null ? "password" : added.get("passwordParamName"));
          json.set("rememberMe", added.get("rememberMeParamName") == null ? "rememberMe" : added.get("rememberMeParamName"));
       }
-      else if(key.getType().equals(new FQN(LoginFailed.class)))
+      else if(key.getType().equals(Name.create(LoginFailed.class)))
       {
          loginFailedMethodId = ((ElementHandle.Method)key.getElement()).getMethodHandle().toString();
       }
-      else if(key.getType().equals(new FQN(LoginForm.class)))
+      else if(key.getType().equals(Name.create(LoginForm.class)))
       {
          loginFormMethodId = ((ElementHandle.Method)key.getElement()).getMethodHandle().toString();
       }
-      else if(key.getType().equals(new FQN(Logout.class)))
+      else if(key.getType().equals(Name.create(Logout.class)))
       {
          json.set("logout", true);
       }
-      if(key.getType().equals(new FQN(RequiresGuest.class)))
+      if(key.getType().equals(Name.create(RequiresGuest.class)))
       {
          json.set("guest", true);
       }
-      else if(key.getType().equals(new FQN(RequiresUser.class)))
+      else if(key.getType().equals(Name.create(RequiresUser.class)))
       {
          json.set("user", true);
       }
-      else if(key.getType().equals(new FQN(RequiresAuthentication.class)))
+      else if(key.getType().equals(Name.create(RequiresAuthentication.class)))
       {
          json.set("authenticate", true);
       }
-      else if(key.getType().equals(new FQN(RequiresPermissions.class)))
+      else if(key.getType().equals(Name.create(RequiresPermissions.class)))
       {
          ArrayList<String> values = (ArrayList<String>)added.get("value");
          String logical = (String)added.get("logical");
@@ -176,7 +176,7 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          }
          json.set("permission", foo);
       }
-      else if(key.getType().equals(new FQN(RequiresRoles.class)))
+      else if(key.getType().equals(Name.create(RequiresRoles.class)))
       {
          ArrayList<String> values = (ArrayList<String>)added.get("value");
          String logical = (String)added.get("logical");

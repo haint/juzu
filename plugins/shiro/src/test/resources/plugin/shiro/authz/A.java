@@ -67,14 +67,14 @@ public class A
       
       return Render.ok(
          info +
-         "<a id='requireGuestURL' href='" + A_.guestURL() +"'>requireGuestURL</a><br/>" +
-         "<a id='requireUserURL' href='" + A_.userURL() +"'>requireUserURL</a><br/>" +
-         "<a id='requireAuthcURL' href='" + A_.authenticateURL() +"'>requireAuthcURL</a><br/>" +
-         "<a id='requireRoleURL' href='" + A_.roleURL() +"'>requireRoleURL</a><br/>" +
-         "<a id='requirePermsURL' href='" + A_.permissionURL() +"'>requirePermsURL</a><br/>" +
-         "<a id='loginWithRootURL' href='" + A_.changeToRootURL() +"'>loginWithRootURL</a><br/>" +
-         "<a id='loginWithUserURL' href='" + A_.changeToUserURL() +"'>loginWithUserURL</a><br/>" +
-         "<a id='logoutURL' href='" + A_.logoutURL() +"'>logoutURL</a><br/>");
+         "<a id='requireGuestURL' href='" + A_.guest() +"'>requireGuestURL</a><br/>" +
+         "<a id='requireUserURL' href='" + A_.user() +"'>requireUserURL</a><br/>" +
+         "<a id='requireAuthcURL' href='" + A_.authenticate() +"'>requireAuthcURL</a><br/>" +
+         "<a id='requireRoleURL' href='" + A_.role() +"'>requireRoleURL</a><br/>" +
+         "<a id='requirePermsURL' href='" + A_.permission() +"'>requirePermsURL</a><br/>" +
+         "<a id='loginWithRootURL' href='" + A_.changeToRoot() +"'>loginWithRootURL</a><br/>" +
+         "<a id='loginWithUserURL' href='" + A_.changeToUser() +"'>loginWithUserURL</a><br/>" +
+         "<a id='logoutURL' href='" + A_.logout() +"'>logoutURL</a><br/>");
    }
    
    @View

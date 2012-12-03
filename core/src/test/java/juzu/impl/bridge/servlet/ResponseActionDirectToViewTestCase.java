@@ -47,6 +47,7 @@ public class ResponseActionDirectToViewTestCase extends AbstractWebTestCase {
   @Test
   public void testPathParam() throws Exception {
     driver.get(applicationURL().toString());
+    System.out.println(applicationURL().toString());
     WebElement trigger = driver.findElement(By.tagName("body"));
     URL url = new URL(trigger.getText());
     HttpURLConnection conn = (HttpURLConnection)url.openConnection();
