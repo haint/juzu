@@ -25,7 +25,7 @@ import juzu.Response;
 import juzu.Response.Render;
 import juzu.asset.Asset;
 import juzu.impl.common.JSON;
-import juzu.impl.plugin.controller.descriptor.MethodDescriptor;
+import juzu.impl.request.Method;
 import juzu.impl.request.Request;
 import juzu.plugin.shiro.common.ShiroTools;
 
@@ -59,12 +59,12 @@ public class ShiroAuthorizer
       String loginFormMethodId = config.getString("loginForm");
       if(loginFormMethodId != null)
       {
-         List<MethodDescriptor> methods = request.getApplication().getDescriptor().getControllers().getMethods();
-         for(MethodDescriptor method : methods)
+         List<Method> methods = request.getApplication().getDescriptor().getControllers().getMethods();
+         for(Method method : methods)
          {
             if(method.getHandle().toString().equals(loginFormMethodId))
             {
-               Request loginFormRequest = new Request(request.getApplication(), method, Collections.EMPTY_MAP, new Object[]{}, request.getBridge());
+               Request loginFormRequest = new Request(request.getApplication(), method, Collections.EMPTY_MAP, request.getBridge());
                loginFormRequest.invoke();
                if(previousResponse != null)
                {

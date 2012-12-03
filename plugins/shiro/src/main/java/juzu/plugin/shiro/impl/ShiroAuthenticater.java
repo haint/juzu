@@ -21,10 +21,9 @@ import java.util.List;
 
 import juzu.Response;
 import juzu.impl.common.JSON;
-import juzu.impl.plugin.controller.descriptor.MethodDescriptor;
+import juzu.impl.request.Method;
 import juzu.impl.request.Request;
 import juzu.plugin.shiro.mgt.JuzuRememberMe;
-import juzu.request.MimeContext;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -70,12 +69,12 @@ public class ShiroAuthenticater
       String loginFailedMethodId = config.getString("loginFailed");
       if(loginFailedURL == null && loginFailedMethodId != null)
       {
-         List<MethodDescriptor> methods = request.getApplication().getDescriptor().getControllers().getMethods();
-         for(MethodDescriptor method : methods)
+         List<Method> methods = request.getApplication().getDescriptor().getControllers().getMethods();
+         for(Method method : methods)
          {
             if(method.getHandle().toString().equals(loginFailedMethodId))
             {
-               loginFailedURL = ((MimeContext) request.getContext()).createURLBuilder(method).toString();
+               loginFailedURL = request.getContext().createDispatch(method).toString();
             }
          }
       }

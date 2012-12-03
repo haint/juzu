@@ -19,7 +19,7 @@ package juzu.plugin.shiro;
 
 import java.net.URL;
 
-import juzu.test.protocol.portlet.AbstractPortletTestCase;
+import juzu.test.AbstractWebTestCase;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
@@ -40,11 +40,11 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @version $Id$
  *
  */
-public class ShiroAuthenticatingTestCase extends AbstractPortletTestCase
+public class ShiroAuthenticatingTestCase extends AbstractWebTestCase
 {
    @Deployment(testable = false)
    public static WebArchive createDeployment() {
-     return createDeployment("plugin.shiro.authc");
+     return createServletDeployment(true, "plugin.shiro.authc");
    }
    
    /** . */
@@ -78,7 +78,7 @@ public class ShiroAuthenticatingTestCase extends AbstractPortletTestCase
    @RunAsClient
    public void testLoginSuccess() throws Exception 
    {
-      URL url = deploymentURL.toURI().resolve("embed/StandalonePortlet").toURL();
+      URL url = deploymentURL.toURI().resolve("authc").toURL();
       driver.get(url.toString());
       
       String guestLink = driver.findElement(By.id("guest")).getAttribute("href");
@@ -110,7 +110,7 @@ public class ShiroAuthenticatingTestCase extends AbstractPortletTestCase
    @RunAsClient
    public void testLoginFailed() throws Exception
    {
-      URL url = deploymentURL.toURI().resolve("embed/StandalonePortlet").toURL();
+      URL url = deploymentURL.toURI().resolve("authc").toURL();
       driver.get(url.toString());
       
       String guestLink = driver.findElement(By.id("guest")).getAttribute("href");
