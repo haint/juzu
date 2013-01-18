@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro;
+package plugin.shiro;
 
 import java.net.URL;
 
@@ -44,7 +44,9 @@ public class ShiroAuthenticatingTestCase extends AbstractWebTestCase
 {
    @Deployment(testable = false)
    public static WebArchive createDeployment() {
-     return createServletDeployment(true, "plugin.shiro.authc");
+      WebArchive war = createServletDeployment(true, "plugin.shiro.authc");
+      war.addPackages(true, SimpleRealm.class.getPackage());
+      return war; 
    }
    
    /** . */

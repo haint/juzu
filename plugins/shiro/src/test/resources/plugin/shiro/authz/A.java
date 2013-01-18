@@ -47,7 +47,7 @@ import juzu.template.Template;
 public class A
 {
    @Inject
-   SimpleUserHandle userHandle;
+   plugin.shiro.SimpleRealm realm;
    
    @Route("/")
    @View
@@ -107,7 +107,7 @@ public class A
       {
          subject.logout();
       }
-      UsernamePasswordToken token = new UsernamePasswordToken("haint", "haint");
+      UsernamePasswordToken token = new UsernamePasswordToken("john", "foo");
       subject.login(token);
       return A_.index();
    }

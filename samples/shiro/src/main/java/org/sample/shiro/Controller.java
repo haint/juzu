@@ -35,7 +35,6 @@ import juzu.template.Template;
 
 import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresUser;
-import org.sample.shiro.realm.SimpleUserHandle;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -47,7 +46,7 @@ public class Controller
    private final String[] ROLES = { "admin", "president", "darklord", "goodguy", "schwartz" };
    
    @Inject
-   SimpleUserHandle userHandle;
+   org.sample.shiro.realm.SimpleRealm userHandle;
    
    @Inject @Path("index.gtmpl") org.sample.shiro.templates.index index;
    

@@ -41,9 +41,8 @@ import juzu.template.Template;
  */
 public class A
 {
-   
    @Inject
-   SimpleUserHandle realmHandle;
+   plugin.shiro.SimpleRealm realm;
    
    @Inject
    @Path("index.gtmpl")
