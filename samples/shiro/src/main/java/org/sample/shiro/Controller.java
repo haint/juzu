@@ -27,12 +27,14 @@ import juzu.Response;
 import juzu.Route;
 import juzu.View;
 import juzu.plugin.shiro.Login;
-import juzu.plugin.shiro.LoginFailed;
-import juzu.plugin.shiro.LoginForm;
 import juzu.plugin.shiro.Logout;
 import juzu.plugin.shiro.common.ShiroTools;
 import juzu.template.Template;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresUser;
 
@@ -53,7 +55,7 @@ public class Controller
    @View @Route("/")
    public void index()
    {
-      String currentUser = ShiroTools.getCurrentUser();
+      String currentUser = (String)SecurityUtils.getSubject().getPrincipal();
       LinkedList<String> hasRoles = new LinkedList<String>();
       LinkedList<String> lackRoles = new LinkedList<String>();
       for(String role : ROLES)
@@ -77,28 +79,25 @@ public class Controller
    
    @Inject @Path("loginform.gtmpl") Template loginForm;
    
-   @View @Route("/loginForm") @RequiresGuest @LoginForm
-   public void loginForm()
+   @View @Route("/loginForm") @RequiresGuest
+   public Response loginForm(AuthorizationException e)
    {
-      loginForm.render();
+      return e == null ? loginForm.render() : Response.notFound("you must <a href='" + Controller_.logout() + "'>logout</a> before login again");
    }
    
-   @Action @Route("/doLogin") @Login
-   public Response doLogin(String username, String password, String rememberMe)
+   @Action @Route("/doLogin") 
+   @Login(username = "uname", password = "pwd", rememberMe = "remember")
+   public Response doLogin(String uname, String pwd, String remember, AuthenticationException ex)
    {
-      return Controller_.index();
+      System.out.println("doLogin invoking");
+      return ex == null ? Controller_.index() : Controller_.loginForm();
    }
    
-   @Action @Route("/login/failed") @LoginFailed
-   public Response loginFailed()
+   @Action @Route("/logout")
+   @Logout @RequiresAuthentication
+   public Response logout(AuthorizationException e)
    {
-      return Controller_.loginForm();
-   }
-   
-   @Action @Route("/logout") @Logout
-   public Response logout()
-   {
-      return Controller_.index();
+      return e == null ? Controller_.index() : Controller_.loginForm();
    }
    
    @Inject
@@ -106,8 +105,8 @@ public class Controller
    Template account;
    
    @View @Route("/account") @RequiresUser
-   public void account()
+   public Response account(AuthorizationException ex)
    {
-      account.render();
+      return ex == null ? account.render() : loginForm.render();
    }
 }

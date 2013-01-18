@@ -19,13 +19,13 @@ package juzu.plugin.shiro.impl;
 
 import java.util.List;
 
-import juzu.Response;
-import juzu.impl.common.JSON;
-import juzu.impl.request.Method;
+import juzu.impl.request.ContextualParameter;
+import juzu.impl.request.Parameter;
 import juzu.impl.request.Request;
-import juzu.plugin.shiro.mgt.JuzuRememberMe;
+import juzu.plugin.shiro.Login;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.mgt.DefaultSecurityManager;
@@ -38,103 +38,60 @@ import org.apache.shiro.subject.Subject;
  */
 public class ShiroAuthenticater
 {
-   /** . */
-   private final JSON config;
    
-   /** . */
-   private String loginFailedURL;
+   private final boolean rememberMe;
    
-   /** . */
-   private boolean rememberMe;
-   
-   public ShiroAuthenticater(JSON config)
+   public ShiroAuthenticater(boolean rememberMe)
    {
-      this.rememberMe = Boolean.valueOf(config.getString("rememberMe"));
-      this.config = config;
-      init();
+      this.rememberMe = rememberMe;
    }
-   
-   private void init()
+
+   public void doLogout(Request request)
    {
-      DefaultSecurityManager sm = new DefaultSecurityManager();
+      SecurityUtils.getSubject().logout();
+      request.invoke();
       if(rememberMe)
       {
-         sm.setRememberMeManager(new JuzuRememberMe());
-      }
-      SecurityUtils.setSecurityManager(sm);
-   }
-   
-   private void onStart(Request request)
-   {
-      String loginFailedMethodId = config.getString("loginFailed");
-      if(loginFailedURL == null && loginFailedMethodId != null)
-      {
-         List<Method> methods = request.getApplication().getDescriptor().getControllers().getMethods();
-         for(Method method : methods)
-         {
-            if(method.getHandle().toString().equals(loginFailedMethodId))
-            {
-               loginFailedURL = request.getContext().createDispatch(method).toString();
-            }
-         }
+         RememberMeUtil.forgetIdentity();
       }
    }
-   
-   public Request invoke(Request request)
+
+   public void doLogin(Request request)
    {
-      //
-      onStart(request);
-      
-      JSON json = config.getJSON("methods").getJSON(request.getContext().getMethod().getHandle().toString());
-      if(json == null)
-      {
-         return request;
-      }
-      
+      Login loginAnnotation = request.getContext().getMethod().getMethod().getAnnotation(Login.class);
       Subject subject = SecurityUtils.getSubject();
-      if(subject.isAuthenticated() || subject.getPrincipal() != null)
+      
+      String susername = request.getParameters().get(loginAnnotation.username())[0];
+      String spassword = request.getParameters().get(loginAnnotation.password())[0];
+      boolean remember = request.getParameters().get(loginAnnotation.rememberMe()) != null ? true : false;
+      try
       {
-         if(json.get("logout") != null && json.getBoolean("logout"))
+         subject.login(new UsernamePasswordToken(susername, spassword.toCharArray(), remember));
+        
+         //
+         request.invoke();
+         if(remember)
          {
-            subject.logout();
-            if(!rememberMe)
+            RememberMeUtil.forgetIdentity();
+            RememberMeUtil.rememberSerialized(request.getResponse());
+         }
+      } 
+      catch (AuthenticationException e)
+      {
+         List<Parameter> parameters = request.getContext().getMethod().getParameters();
+         for(Parameter parameter : parameters) 
+         {
+            if(parameter instanceof ContextualParameter && parameter.getType().equals(AuthenticationException.class)) 
             {
-               return request;
+               AuthenticationException.class.isAssignableFrom(parameter.getType());
+               request.setArgument(parameter, e);
             }
-            else
-            {
-               return null;
-            }
+         }
+         request.invoke();
+         if(remember)
+         {
+            RememberMeUtil.forgetIdentity();
          }
       }
-      
-      if(json.get("login") != null && json.getBoolean("login"))
-      {
-         String username = request.getParameters().get(json.getString("username"))[0];
-         String password = request.getParameters().get(json.getString("password"))[0];
-         boolean remember = request.getParameters().get(json.getString("rememberMe")) != null ? true : false;
-         try
-         {
-            subject.login(new UsernamePasswordToken(username, password.toCharArray(), remember));
-            if(!remember)
-            {
-               return request;
-            }
-         }
-         catch (AuthenticationException e)
-         {
-            if(loginFailedURL == null)
-            {
-               request.setResponse(Response.content(401, "Unauthorized"));
-            }
-            else
-            {
-               request.setResponse(Response.redirect(loginFailedURL));
-            }
-         }
-         return null;
-      }
-      
-      return request;
    }
 }

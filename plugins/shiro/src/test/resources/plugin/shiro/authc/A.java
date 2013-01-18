@@ -21,6 +21,7 @@ package plugin.shiro.authc;
 import javax.inject.Inject;
 
 import org.apache.shiro.authz.annotation.RequiresGuest;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresUser;
 
 import juzu.Action;
@@ -30,7 +31,6 @@ import juzu.Response.Render;
 import juzu.Route;
 import juzu.View;
 import juzu.plugin.shiro.Login;
-import juzu.plugin.shiro.LoginFailed;
 import juzu.plugin.shiro.Logout;
 import juzu.template.Template;
 
@@ -39,6 +39,7 @@ import juzu.template.Template;
  * @version $Id$
  *
  */
+@RequiresGuest
 public class A
 {
    @Inject
@@ -54,7 +55,7 @@ public class A
       return index.render();
    }
    
-   @Action @Route("/login") @Login(usernameParamName="uname", passwordParamName="passwd")
+   @Action @Route("/login") @Login(username="uname", password="passwd")
    public Response login(String uname, String passwd)
    {
       return A_.afterLogin(uname);
@@ -66,7 +67,7 @@ public class A
       return Render.ok("logged with " + username);
    }
    
-   @View @Route("/login/failed") @LoginFailed
+   @View @Route("/login/failed")
    public Response loginFailed()
    {
       return Render.ok("Incorrect username or password");

@@ -31,7 +31,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.PACKAGE)
 public @interface Shiro
 {
-   boolean rememberMe() default false;
-   
-   boolean redirectToLoginForm() default false;
+   Supported[] supports();
 }

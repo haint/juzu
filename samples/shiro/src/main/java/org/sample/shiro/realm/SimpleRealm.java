@@ -48,7 +48,10 @@ public class SimpleRealm extends AuthorizingRealm
       for(String role : roles)
       {
          Set<String> perms = handle.getPermissions(username, role);
-         permission.addAll(perms);
+         if(perms != null)
+         {
+            permission.addAll(perms);
+         }
       }
       info.setStringPermissions(permission);
       return info;

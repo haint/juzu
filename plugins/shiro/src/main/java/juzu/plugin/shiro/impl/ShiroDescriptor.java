@@ -17,11 +17,18 @@
  */
 package juzu.plugin.shiro.impl;
 
-import juzu.Response;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 import juzu.impl.common.JSON;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
+import juzu.plugin.shiro.Supported;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.shiro.mgt.DefaultSecurityManager;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -36,30 +43,90 @@ public class ShiroDescriptor extends Descriptor
    /** . */
    private final ShiroAuthenticater authenticater;
    
+   /** . */
+   private final JSON config;
+   
+   /** . */
+   private boolean rememberMe = false;
+   
    ShiroDescriptor(JSON config)
    {
-      this.authorizer = new ShiroAuthorizer(config);
-      this.authenticater = new ShiroAuthenticater(config);
+      List<String> supports = (List<String>)config.getList("supports");
+      if(supports != null)
+      {
+         this.rememberMe = supports.contains(Supported.rememberMe) ? true : false;
+      }
+      
+      org.apache.shiro.mgt.SecurityManager sm;
+      try
+      {
+         sm = SecurityUtils.getSecurityManager();
+      }
+      catch (UnavailableSecurityManagerException e)
+      {
+         sm = new DefaultSecurityManager();
+         SecurityUtils.setSecurityManager(sm);
+      }
+
+      ((DefaultSecurityManager)sm).setRememberMeManager(rememberMe ? new JuzuRememberMe() : null);
+      
+      this.authenticater = new ShiroAuthenticater(rememberMe);
+      this.authorizer = new ShiroAuthorizer();
+      this.config = config;
    }
    
-   public void invoke(Request request) throws ApplicationException
+   public void invoke(Request request) throws ApplicationException, InvocationTargetException
    {
       try
       {
-         //
          ShiroRequestLifecycle.begin(request);
+         String methodId = request.getContext().getMethod().getHandle().toString();
+         String controllerId = methodId.substring(0, methodId.indexOf('#'));
+         methodId = methodId.substring(controllerId.length() + 1);
+         JSON controllerJSON = config.getJSON(controllerId);
+         if(controllerJSON == null)
+         {
+            request.invoke();
+         }
          
          //
-         if(authenticater.invoke(request) != null) 
+         if(controllerJSON.get("require") != null)
          {
-            authorizer.invoke(request);
+            authorizer.doAuthorize(request, controllerJSON);
+         }
+         else
+         {
+            JSON methodsJSON = controllerJSON.getJSON("methods");
+            if(methodsJSON != null)
+            {
+               JSON json = methodsJSON.getJSON(methodId);
+               
+               if(json != null)
+               {
+                  boolean isAuthorized = authorizer.doAuthorize(request, json);
+                  if(isAuthorized)
+                  {
+                     if("login".equals(json.get("operator")))
+                     {
+                        authenticater.doLogin(request);
+                     }
+                     else if("logout".equals(json.get("operator")))
+                     {
+                        authenticater.doLogout(request);
+                     }
+                  }
+               }
+               else
+               {
+                  request.invoke();
+               }
+            }
+            else
+            {
+               request.invoke();
+            }
          }
       } 
-      catch(Exception e)
-      {
-         e.printStackTrace();
-         request.setResponse(Response.content(500, e.getMessage()));
-      }
       finally
       {
          ShiroRequestLifecycle.end(request);

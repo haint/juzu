@@ -17,6 +17,8 @@
  */
 package juzu.plugin.shiro.impl;
 
+import java.lang.reflect.InvocationTargetException;
+
 import juzu.impl.common.JSON;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
@@ -29,12 +31,12 @@ import juzu.impl.request.RequestFilter;
  * @version $Id$
  *
  */
-public class ShiroApplicationPlugin extends ApplicationPlugin implements RequestFilter
+public class ShiroPlugin extends ApplicationPlugin implements RequestFilter
 {
    /** . */
    private ShiroDescriptor descriptor;
    
-   public ShiroApplicationPlugin()
+   public ShiroPlugin()
    {
       super("shiro");
    }
@@ -53,7 +55,14 @@ public class ShiroApplicationPlugin extends ApplicationPlugin implements Request
    {
       if(descriptor != null) 
       {
-         descriptor.invoke(request);
+         try
+         {
+            descriptor.invoke(request);
+         }
+         catch (InvocationTargetException e)
+         {
+            throw new RuntimeException(e);
+         }
       }
       else
       {
