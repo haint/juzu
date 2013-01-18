@@ -82,7 +82,6 @@ public class ShiroAuthenticatingTestCase extends AbstractWebTestCase
    {
       URL url = deploymentURL.toURI().resolve("authc").toURL();
       driver.get(url.toString());
-      
       String guestLink = driver.findElement(By.id("guest")).getAttribute("href");
       String userLink = driver.findElement(By.id("user")).getAttribute("href");
       String logoutLink = driver.findElement(By.id("logout")).getAttribute("href");

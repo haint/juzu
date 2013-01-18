@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import juzu.impl.common.Name;
 import juzu.impl.common.JSON;
+import juzu.impl.common.Name;
 import juzu.impl.common.Tools;
 import juzu.impl.compiler.ElementHandle;
 import juzu.impl.compiler.ProcessingContext;
@@ -35,8 +35,6 @@ import juzu.impl.plugin.controller.metamodel.ControllerMetaModel;
 import juzu.impl.plugin.controller.metamodel.ControllersMetaModel;
 import juzu.impl.plugin.controller.metamodel.MethodMetaModel;
 import juzu.plugin.shiro.Login;
-import juzu.plugin.shiro.LoginFailed;
-import juzu.plugin.shiro.LoginForm;
 import juzu.plugin.shiro.Logout;
 import juzu.plugin.shiro.Shiro;
 
@@ -52,7 +50,7 @@ import org.apache.shiro.authz.annotation.RequiresUser;
  * @version $Id$
  *
  */
-public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
+public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
 {
    /** . */
    private final Map<ElementHandle.Package, JSON> enableMap = new HashMap<ElementHandle.Package, JSON>();
@@ -60,13 +58,10 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    /** . */
    private final Map<ElementHandle<?>, Map<AnnotationKey, AnnotationState>> methods = new HashMap<ElementHandle<?>, Map<AnnotationKey, AnnotationState>>();
    
-   /** . */
-   private String loginFailedMethodId = null;
+   /** .*/
+   private final Map<ElementHandle<?>, Map<AnnotationKey, AnnotationState>> controllers = new HashMap<ElementHandle<?>, Map<AnnotationKey,AnnotationState>>();
    
-   /** . */
-   private String loginFormMethodId = null;
-   
-   public ShiroApplicationMetaModelPlugin()
+   public ShiroMetaModelPlugin()
    {
       super("shiro");
    }
@@ -81,9 +76,7 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          RequiresPermissions.class, 
          RequiresRoles.class,
          Login.class,
-         LoginFailed.class,
-         Logout.class,
-         LoginForm.class);
+         Logout.class);
     }
    
    @Override
@@ -93,8 +86,8 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
       if(key.getType().equals(Name.create(Shiro.class)))
       {
          JSON json = new JSON();
-         json.set("rememberMe", added.get("rememberMe") != null ? "true" : "false");
-         json.set("redirectToLoginForm", added.get("redirectToLoginForm") != null ? "true" : "false");
+         Object obj = added.get("supports");
+         json.set("supports", obj);
          enableMap.put(handle, json);
       }
       else 
@@ -104,15 +97,13 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    }
    
    private void emitConfig(AnnotationKey key, AnnotationState added) {
-      if (key.getType().equals(Name.create(RequiresGuest.class)) ||
-               key.getType().equals(Name.create(RequiresUser.class)) ||
-               key.getType().equals(Name.create(RequiresAuthentication.class)) ||
-               key.getType().equals(Name.create(RequiresRoles.class)) ||
-               key.getType().equals(Name.create(RequiresPermissions.class)) ||
-               key.getType().equals(Name.create(Login.class)) ||
-               key.getType().equals(Name.create(LoginFailed.class)) ||
-               key.getType().equals(Name.create(Logout.class)) ||
-               key.getType().equals(Name.create(LoginForm.class)))
+      if (key.getType().equals(Name.create(RequiresGuest.class))
+               || key.getType().equals(Name.create(RequiresUser.class))
+               || key.getType().equals(Name.create(RequiresAuthentication.class))
+               || key.getType().equals(Name.create(RequiresRoles.class))
+               || key.getType().equals(Name.create(RequiresPermissions.class))
+               || key.getType().equals(Name.create(Login.class))
+               || key.getType().equals(Name.create(Logout.class)))
       {
          if(key.getElement() instanceof ElementHandle.Method)
          {
@@ -124,6 +115,22 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
             }
             annotations.put(key, added);
          }
+         else if(key.getElement() instanceof ElementHandle.Class)
+         {
+            if(key.getType().equals(Name.create(RequiresGuest.class)) 
+                     || key.getType().equals(Name.create(RequiresAuthentication.class))
+                     || key.getType().equals(Name.create(RequiresUser.class)))
+            {
+               Map<AnnotationKey, AnnotationState> annotations = controllers.get(key.getElement());
+               if(annotations == null)
+               {
+                  annotations = new HashMap<AnnotationKey, AnnotationState>();
+                  controllers.put(key.getElement(), annotations);
+               }
+               annotations.put(key, added);
+            }
+            else throw new UnsupportedOperationException("Unsupported " + key.getType() + " at " + key.getElement());
+         }
       }
    }
    
@@ -131,34 +138,43 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
    {
       if(key.getType().equals(Name.create(Login.class)))
       {
-         json.set("login", true);
-         json.set("username", added.get("usernameParamName") == null ? "username" : added.get("usernameParamName"));
-         json.set("password", added.get("passwordParamName") == null ? "password" : added.get("passwordParamName"));
-         json.set("rememberMe", added.get("rememberMeParamName") == null ? "rememberMe" : added.get("rememberMeParamName"));
-      }
-      else if(key.getType().equals(Name.create(LoginFailed.class)))
-      {
-         loginFailedMethodId = ((ElementHandle.Method)key.getElement()).getMethodHandle().toString();
-      }
-      else if(key.getType().equals(Name.create(LoginForm.class)))
-      {
-         loginFormMethodId = ((ElementHandle.Method)key.getElement()).getMethodHandle().toString();
+         if(json.get("operator") != null)
+         {
+            throw new UnsupportedOperationException("Unsupported multiple operators at " + key.getElement());
+         }
+         json.set("operator", "login");
       }
       else if(key.getType().equals(Name.create(Logout.class)))
       {
-         json.set("logout", true);
+         if(json.get("operator") != null)
+         {
+            throw new UnsupportedOperationException("Unsupported multiple operators at " + key.getElement());
+         }
+         json.set("operator", "logout");
       }
-      if(key.getType().equals(Name.create(RequiresGuest.class)))
+      else if(key.getType().equals(Name.create(RequiresGuest.class)))
       {
-         json.set("guest", true);
+         if(json.get("require") != null)
+         {
+            throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
+         }
+         json.set("require", "guest");
       }
       else if(key.getType().equals(Name.create(RequiresUser.class)))
       {
-         json.set("user", true);
+         if(json.get("require") != null)
+         {
+            throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
+         }
+         json.set("require", "user");
       }
       else if(key.getType().equals(Name.create(RequiresAuthentication.class)))
       {
-         json.set("authenticate", true);
+         if(json.get("require") != null)
+         {
+            throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
+         }
+         json.set("require", "authenticate");
       }
       else if(key.getType().equals(Name.create(RequiresPermissions.class)))
       {
@@ -174,7 +190,7 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          {
             foo.set("logical", Logical.AND);
          }
-         json.set("permission", foo);
+         json.set("permissions", foo);
       }
       else if(key.getType().equals(Name.create(RequiresRoles.class)))
       {
@@ -190,44 +206,78 @@ public class ShiroApplicationMetaModelPlugin extends ApplicationMetaModelPlugin
          {
             foo.set("logical", Logical.AND);
          }
-         json.set("role", foo);
+         json.set("roles", foo);
       }
    }
    
    @Override
    public void postProcessEvents(ApplicationMetaModel metaModel)
    {
-      ElementHandle.Package handle = metaModel.getHandle();
-      JSON config = enableMap.get(handle);
+      ElementHandle.Package packageHandle = metaModel.getHandle();
+      JSON config = enableMap.get(packageHandle);
       if(config != null)
       {
-         ControllersMetaModel controllers = metaModel.getChild(ControllersMetaModel.KEY);
-         JSON foo = new JSON();
-         for(ControllerMetaModel controller : controllers)
+         ControllersMetaModel controllersModel = metaModel.getChild(ControllersMetaModel.KEY);
+         
+         for(ControllerMetaModel controller : controllersModel)
          {
-            for(MethodMetaModel method : controller)
+            Map<AnnotationKey, AnnotationState> annotations = controllers.get(controller.getHandle());
+            if(annotations != null)
             {
-               Map<AnnotationKey, AnnotationState> annotations = methods.get(method.getHandle());
-               if(annotations != null) 
+               JSON controllerJSON = new JSON();
+               config.set(controller.getHandle().getFQN().toString(), controllerJSON);
+               
+               for (Map.Entry<AnnotationKey, AnnotationState> entry : annotations.entrySet())
                {
-                  JSON bar = new JSON();
-                  for(Map.Entry<AnnotationKey, AnnotationState> entry : annotations.entrySet())
+                  AnnotationKey key = entry.getKey();
+                  
+                  if(controllerJSON.get("require") != null)
                   {
-                     emitConfig(bar, entry.getKey(), entry.getValue());
+                     throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
                   }
-                  foo.set(method.getHandle().getMethodHandle().toString(), bar);
+                  
+                  if(key.getType().equals(Name.create(RequiresGuest.class))) 
+                  {
+                     controllerJSON.set("require", "guest");
+                  }
+                  else if(key.getType().equals(Name.create(RequiresAuthentication.class)))
+                  {
+                     controllerJSON.set("require", "authenticate");
+                  }
+                  else if(key.getType().equals(Name.create(RequiresUser.class)))
+                  {
+                     controllerJSON.set("require", "user");
+                  }
                }
             }
-         }
-         config.set("methods", foo);
-         
-         if(loginFailedMethodId != null)
-         {
-            config.set("loginFailed", loginFailedMethodId);
-         }
-         if(loginFormMethodId != null)
-         {
-            config.set("loginForm", loginFormMethodId);
+            
+            for(MethodMetaModel method : controller)
+            {
+               annotations = methods.get(method.getHandle());
+               if(annotations != null) 
+               {
+                  JSON controllerJSON = config.getJSON(controller.getHandle().getFQN().toString());
+                  if(controllerJSON == null)
+                  {
+                     controllerJSON = new JSON();
+                     config.set(controller.getHandle().getFQN().toString(), controllerJSON);
+                  }
+                  
+                  JSON methodJSON = new JSON();;
+                  for(Map.Entry<AnnotationKey, AnnotationState> entry : annotations.entrySet())
+                  {
+                     emitConfig(methodJSON, entry.getKey(), entry.getValue());
+                  }
+                  String methodId = method.getHandle().getMethodHandle().toString();
+                  JSON methodsJSON = controllerJSON.getJSON("methods");
+                  if(methodsJSON == null)
+                  {
+                     methodsJSON = new JSON();
+                     controllerJSON.set("methods", methodsJSON);
+                  }
+                  methodsJSON.set(methodId.substring(methodId.lastIndexOf('#') + 1), methodJSON);
+               }
+            }
          }
       }
    }

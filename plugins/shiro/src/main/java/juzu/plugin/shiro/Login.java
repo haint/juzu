@@ -31,9 +31,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Login
 {
-   String usernameParamName() default "username";
+   String username() default "username";
    
-   String passwordParamName() default "password";
+   String password() default "password";
    
-   String rememberMeParamName() default "rememberMe";
+   String rememberMe() default "rememberMe";
 }

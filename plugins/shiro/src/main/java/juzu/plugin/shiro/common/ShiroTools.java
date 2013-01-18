@@ -34,33 +34,6 @@ public class ShiroTools
 {
 
    /**
-    * 
-    * @return the current principal of subject
-    */
-   public static String getCurrentUser()
-   {
-      return (String)SecurityUtils.getSubject().getPrincipal();
-   }
-   
-   /**
-    * 
-    * @see Subject#isAuthenticated()
-    */
-   public static boolean isAuthenticated()
-   {
-      return SecurityUtils.getSubject().isAuthenticated();
-   }
-   
-   /**
-    * 
-    * @see Subject#hasRole(String)
-    */
-   public static boolean hasRole(String role)
-   {
-      return SecurityUtils.getSubject().hasRole(role);
-   }
-   
-   /**
     * Check has roles with OR logical
     * 
     * @param roles
@@ -76,36 +49,6 @@ public class ShiroTools
          }
       }
       return false;
-   }
-   
-   /**
-    * Delegate to {@link Subject#hasAllRoles(java.util.Collection)}
-    * 
-    * @param roles
-    * @return
-    */
-   public static boolean hasAllRoles(String... roles)
-   {
-      return SecurityUtils.getSubject().hasAllRoles(Arrays.asList(roles));
-   }
-   
-   
-   /**
-    * 
-    *@see Subject#isPermittedAll(String...) 
-    */
-   public static boolean isPermittedAll(String... permissions)
-   {
-      return SecurityUtils.getSubject().isPermittedAll(permissions);
-   }
-   
-   /**
-    * 
-    * @see Subject#isPermitted(String)
-    */
-   public static boolean isPermitted(String permission)
-   {
-      return SecurityUtils.getSubject().isPermitted(permission);
    }
    
    /**

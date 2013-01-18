@@ -17,19 +17,17 @@
  */
 package juzu.plugin.shiro.impl;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import juzu.Response;
-import juzu.Response.Render;
-import juzu.asset.Asset;
 import juzu.impl.common.JSON;
-import juzu.impl.request.Method;
+import juzu.impl.request.ContextualParameter;
+import juzu.impl.request.Parameter;
 import juzu.impl.request.Request;
 import juzu.plugin.shiro.common.ShiroTools;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.annotation.Logical;
 
 /**
@@ -39,166 +37,124 @@ import org.apache.shiro.authz.annotation.Logical;
  */
 public class ShiroAuthorizer
 {
-   /** . */
-   private final JSON config;
-   
-   /** . */
-   private boolean redirectToLoginForm;
-   
-   /** . */
-   private Response previousResponse = null;
-   
-   ShiroAuthorizer(JSON config)
+   public boolean doAuthorize(Request request, JSON json)
    {
-      this.redirectToLoginForm = Boolean.valueOf(config.getString("redirectToLoginForm"));
-      this.config = config;
-   }
-   
-   private void sendToLoginForm(Request request)
-   {
-      String loginFormMethodId = config.getString("loginForm");
-      if(loginFormMethodId != null)
-      {
-         List<Method> methods = request.getApplication().getDescriptor().getControllers().getMethods();
-         for(Method method : methods)
-         {
-            if(method.getHandle().toString().equals(loginFormMethodId))
-            {
-               Request loginFormRequest = new Request(request.getApplication(), method, Collections.EMPTY_MAP, request.getBridge());
-               loginFormRequest.invoke();
-               if(previousResponse != null)
-               {
-                  Response.Render render = (Response.Render) previousResponse;
-                  Iterable<Asset> scripts = render.getScripts();
-                  Iterable<Asset> stylesheets = render.getStylesheets();
-                  Response.Render current = (Render)loginFormRequest.getResponse();
-                  if(scripts != null)
-                  {
-                     for(Iterator<Asset> i = scripts.iterator(); i.hasNext();)
-                     {
-                        current.addScript(i.next());
-                     }
-                  }
-                  if(stylesheets != null)
-                  {
-                     for(Iterator<Asset> i = stylesheets.iterator(); i.hasNext();)
-                     {
-                        current.addStylesheet(i.next());
-                     }
-                  }
-               }
-            }
-         }
-      }
-   }
-
-   public void invoke(Request request)
-   {
-      if(allow(request))
+      if(isAuthorized(request, json))
       {
          request.invoke();
-         Response response = request.getResponse();
-         if(response instanceof Response.Render)
-         {
-            previousResponse = response;
-         }
+         return true;
       }
       else
       {
-         if(redirectToLoginForm)
+         List<Parameter> parameters = request.getContext().getMethod().getParameters();
+         for(Parameter parameter : parameters)
          {
-            sendToLoginForm(request);
+            if(parameter instanceof ContextualParameter && parameter.getType().equals(AuthorizationException.class)) 
+            {
+               AuthorizationException.class.isAssignableFrom(parameter.getType());
+               request.setArgument(parameter, new AuthorizationException());
+               request.invoke();
+               return false;
+            }
          }
-         else
-         {
-            request.setResponse(Response.content(401, "Unauthorized"));
-         }
+         request.setResponse(Response.content(401, "Unauthorized"));
+         return false;
       }
    }
    
-   private boolean allow(Request request)
+   private boolean hasRequire(Request request, JSON config) 
    {
-      JSON json = config.getJSON("methods").getJSON(request.getContext().getMethod().getHandle().toString());
-      if(json == null)
+      Object obj = config.get("require");
+      if("guest".equals(obj))
       {
-         return true;
+         return SecurityUtils.getSubject().getPrincipal() == null;
       }
-      
-      //
-      if(json.get("guest") != null && json.getBoolean("guest"))
-      {
-         if(SecurityUtils.getSubject().getPrincipal() != null) 
-         {
-            return false;
-         }
-      }
-
-      //
-      if(json.get("user") != null && json.getBoolean("user"))
-      {
-         if(SecurityUtils.getSubject().getPrincipal() == null)
-         {
-            return false;
-         }
-      }
-
-      //
-      if(json.get("authenticate") != null && json.getBoolean("authenticate"))
+      else if("authenticate".equals(obj))
       {
          return SecurityUtils.getSubject().isAuthenticated();
       }
-
-      //
-      if(json.get("role") != null)
+      else if("user".equals(obj))
       {
-         if(!SecurityUtils.getSubject().isAuthenticated())
-         {
-            return false;
-         }
-
-         JSON foo = json.getJSON("role");
-         Logical  logical = Logical.valueOf(foo.getString("logical"));
-         List<String> roles = (List<String>)foo.get("value");
-         if(roles.size() == 1)
-         {
-            return ShiroTools.hasRole(roles.get(0));
-         }
-         else if(roles.size() > 1)
-         {
-            switch (logical)
-            {
-               case AND :
-                  return ShiroTools.hasAllRoles(roles.toArray(new String[roles.size()]));
-               case OR :
-                  return ShiroTools.hasRole(roles.toArray(new String[roles.size()]));
-            }
-         }
+         return SecurityUtils.getSubject().getPrincipal() != null;
+      }
+      
+      return false;
+   }
+   
+   private boolean hasRoles(Request request, JSON config)
+   {
+      if(!SecurityUtils.getSubject().isAuthenticated())
+      {
+         return false;
       }
 
-      if(json.get("permission") != null)
+      JSON foo = config.getJSON("roles");
+      Logical  logical = Logical.valueOf(foo.getString("logical"));
+      List<String> roles = (List<String>)foo.get("value");
+      if(roles.size() == 1)
       {
-         if(!SecurityUtils.getSubject().isAuthenticated())
+         return ShiroTools.hasRole(roles.get(0));
+      }
+      else if(roles.size() > 1)
+      {
+         switch (logical)
          {
-            return false;
+            case AND :
+               return SecurityUtils.getSubject().hasAllRoles(roles);
+            case OR :
+               return ShiroTools.hasRole(roles.toArray(new String[roles.size()]));
          }
+      }
+      return false;
+   }
+   
+   private boolean hasPermissions(Request request, JSON config)
+   {
+      if(!SecurityUtils.getSubject().isAuthenticated())
+      {
+         return false;
+      }
 
-         JSON foo = json.getJSON("permission");
-         Logical  logical = Logical.valueOf(foo.getString("logical"));
-         List<String> permissions = (List<String>)foo.get("value");
-         if(permissions.size() == 1)
+      JSON foo = config.getJSON("permissions");
+      Logical  logical = Logical.valueOf(foo.getString("logical"));
+      List<String> permissions = (List<String>)foo.get("value");
+      if(permissions.size() == 1)
+      {
+         return ShiroTools.isPermitted(permissions.get(0));
+      }
+      else if(permissions.size() > 1)
+      {
+         switch (logical)
          {
-            return ShiroTools.isPermitted(permissions.get(0));
+            case AND :
+               return SecurityUtils.getSubject().isPermittedAll(permissions.toArray(new String[permissions.size()]));
+            case OR :
+               return ShiroTools.isPermitted(permissions.toArray(new String[permissions.size()]));
          }
-         else if(permissions.size() > 1)
-         {
-            switch (logical)
-            {
-               case AND :
-                  return ShiroTools.isPermittedAll(permissions.toArray(new String[permissions.size()]));
-               case OR :
-                  return ShiroTools.isPermitted(permissions.toArray(new String[permissions.size()]));
-            }
-         }
+      }
+      return false;
+   }
+
+   private boolean isAuthorized(Request request, JSON config)
+   {
+      if(config.get("require") != null)
+      {
+         return hasRequire(request, config);
+      }
+      
+      if(config.get("roles") != null && config.get("permissions") != null)
+      {
+         return hasRoles(request, config) && hasPermissions(request, config);
+      }
+
+      if(config.get("permissions") != null && config.get("roles") == null)
+      {
+         return hasPermissions(request, config);
+      }
+      
+      if(config.get("roles") != null && config.get("permissions") == null)
+      {
+         return hasRoles(request, config);
       }
 
       return true;
