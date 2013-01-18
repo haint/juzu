@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro.mgt;
+package org.sample.shiro.realm;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,45 +34,30 @@ import org.apache.shiro.subject.PrincipalCollection;
  * @version $Id$
  *
  */
-public class JuzuShiroRealm extends AuthorizingRealm
+public class SimpleRealm extends AuthorizingRealm
 {
-   /** . */
-   private UserHandle handle;
-   
-   public JuzuShiroRealm(UserHandle handle)
-   {
-      super();
-      this.handle = handle;
-      setName(handle.getName());
-   }
+   private SimpleUserHandle handle = new SimpleUserHandle();
 
    @Override
    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
    {
       String username = (String)getAvailablePrincipal(principals);
       Set<String> roles = handle.getRoles(username);
-      SimpleAuthorizationInfo authzInfo = new SimpleAuthorizationInfo(roles);
-      Set<String> permissions = new HashSet<String>();
+      SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roles);
+      Set<String> permission = new HashSet<String>();
       for(String role : roles)
       {
          Set<String> perms = handle.getPermissions(username, role);
-         if(perms != null && perms.size() > 0)
-         {
-            permissions.addAll(perms);
-         }
+         permission.addAll(perms);
       }
-      authzInfo.setStringPermissions(permissions);
-      return authzInfo;
+      info.setStringPermissions(permission);
+      return info;
    }
 
    @Override
    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
    {
-      UserInfo userInfo = handle.findUser((String)token.getPrincipal(), new String((char[])token.getCredentials()));
-      if(userInfo == null) 
-      {
-         return null;
-      }
-      return new SimpleAuthenticationInfo(userInfo.getUserName(), userInfo.getPassword().toCharArray(), getName());
+      UserInfo user = handle.findUser((String)token.getPrincipal(), new String((char[])token.getCredentials()));
+      return user != null ? new SimpleAuthenticationInfo(token.getPrincipal(), token.getCredentials(), getName()) : null;
    }
 }

@@ -22,15 +22,13 @@ import java.util.Map;
 import java.util.Set;
 
 import juzu.impl.common.Tools;
-import juzu.plugin.shiro.mgt.UserHandle;
-import juzu.plugin.shiro.mgt.UserInfo;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class SimpleUserHandle implements UserHandle
+public class SimpleUserHandle
 {
    private Map<String, UserInfo> users = new HashMap<String, UserInfo>();
    
@@ -60,25 +58,16 @@ public class SimpleUserHandle implements UserHandle
       permissions.put("goodguy", Tools.set("winnebago:drive:eagle5"));
    }
 
-   @Override
-   public String getName()
-   {
-      return "simple";
-   }
-
-   @Override
    public UserInfo findUser(String username, String password)
    {
       return users.get(username);
    }
 
-   @Override
    public Set<String> getRoles(String username)
    {
       return roles.get(username);
    }
 
-   @Override
    public Set<String> getPermissions(String username, String role)
    {
       return permissions.get(role);

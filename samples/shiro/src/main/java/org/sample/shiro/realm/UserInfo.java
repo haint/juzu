@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro.mgt;
+package org.sample.shiro.realm;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -32,31 +32,27 @@ public class UserInfo implements Serializable
    
    String password;
    
-   Map<String, String> attributes = new HashMap<String, String>();
+   Map<String,String> attributes = new HashMap<String,String>();
    
-   public UserInfo()
+   public UserInfo() 
    {
+      //Default constructor
    }
    
-   public UserInfo(String username, String password)
+   public UserInfo(String username, String password) 
    {
-      this.username = username;
+      this.username  = username;
       this.password = password;
    }
    
-   public void setUserName(String username)
-   {
-      this.username = username;
-   }
-   
-   public String getUserName()
+   public String getUsername() 
    {
       return username;
    }
    
-   public void setPassword(String password)
+   public void setUsername(String username)
    {
-      this.password = password;
+      this.username = username;
    }
    
    public String getPassword()
@@ -64,23 +60,27 @@ public class UserInfo implements Serializable
       return password;
    }
    
-   public Map<String, String> getAttributes()
+   public void setPassword(String password)
+   {
+      this.password = password;
+   }
+   
+   public Map<String,String> getAttributes() 
    {
       return attributes;
    }
    
-   public String getAttribute(String key)
+   public void setAttribute(String name, String value)
    {
-      String value =  attributes.get(key);
-      if(value == null)
-      {
-         return attributes.remove(key);
-      }
-      return value;
+      attributes.put(name, value); 
    }
    
-   public void setAttribute(String key, String value)
+   public String getAttribute(String name)
    {
-      attributes.put(key, value);
+      String value = attributes.get(name);
+      if(value == null) {
+         return attributes.remove(name);
+      }
+      return value;
    }
 }

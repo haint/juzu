@@ -18,19 +18,16 @@
 package juzu.plugin.shiro.impl;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
 
 import juzu.impl.inject.spi.BeanLifeCycle;
 import juzu.impl.request.Request;
-import juzu.plugin.shiro.common.ShiroTools;
-import juzu.plugin.shiro.mgt.JuzuShiroRealm;
-import juzu.plugin.shiro.mgt.RealmHandle;
-import juzu.plugin.shiro.mgt.UserHandle;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -43,26 +40,10 @@ public class ShiroRequestLifecycle
    public static void begin(Request request) throws InvocationTargetException
    {
       DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
-      BeanLifeCycle bean = request.getApplication().getInjectionContext().get(RealmHandle.class);
+      BeanLifeCycle bean = request.getApplication().getInjectionContext().get(AuthorizingRealm.class);
       if(bean != null)
       {
-         RealmHandle handle = (RealmHandle)bean.get();
-         Collection<UserHandle> userHanlders = handle.getAllUserHandle();
-         for(UserHandle userHandle : userHanlders)
-         {
-            if(!ShiroTools.containRealm(userHandle.getName())) 
-            {
-               sm.setRealm(new JuzuShiroRealm(userHandle));
-            }
-         }
-      }
-      else if((bean = request.getApplication().getInjectionContext().get(UserHandle.class)) != null)
-      {
-         UserHandle handle = (UserHandle)bean.get();
-         if(!ShiroTools.containRealm(handle.getName()))
-         {
-            sm.setRealm(new JuzuShiroRealm(handle));
-         }
+               sm.setRealm((Realm)bean.get());
       }
 
       Subject currentUser = null;
