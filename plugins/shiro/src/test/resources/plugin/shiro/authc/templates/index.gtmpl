@@ -1,8 +1,0 @@
-<form action='@{A.login()}' method='post'>
-  <input type='text' id='uname' name='uname'/>
-  <input type='password' id='passwd' name='passwd'>
-  <input type='submit' id='submit' name='submit' value='Login'>
-</form>
-<a href="@{A.guest()}" id="guest">guest</a>
-<a href="@{A.user()}" id="user">user</a>
-<a href="@{A.logout()}" id="logout">logout</a>

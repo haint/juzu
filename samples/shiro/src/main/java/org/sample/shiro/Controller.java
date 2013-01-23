@@ -23,18 +23,21 @@ import javax.inject.Inject;
 
 import juzu.Action;
 import juzu.Path;
+import juzu.Resource;
 import juzu.Response;
 import juzu.Route;
 import juzu.View;
+import juzu.impl.request.Request;
 import juzu.plugin.shiro.Login;
 import juzu.plugin.shiro.Logout;
 import juzu.plugin.shiro.common.ShiroTools;
+import juzu.request.RequestContext;
 import juzu.template.Template;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;

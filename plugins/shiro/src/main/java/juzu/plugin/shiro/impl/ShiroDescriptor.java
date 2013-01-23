@@ -92,7 +92,7 @@ public class ShiroDescriptor extends Descriptor
          //
          if(controllerJSON.get("require") != null)
          {
-            authorizer.doAuthorize(request, controllerJSON);
+            authorizer.isAuthorized(request, controllerJSON);
          }
          else
          {
@@ -103,8 +103,7 @@ public class ShiroDescriptor extends Descriptor
                
                if(json != null)
                {
-                  boolean isAuthorized = authorizer.doAuthorize(request, json);
-                  if(isAuthorized)
+                  if(authorizer.isAuthorized(request, json))
                   {
                      if("login".equals(json.get("operator")))
                      {

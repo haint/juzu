@@ -44,14 +44,14 @@ public class SimpleRealm extends AuthorizingRealm
       {
          SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
          info.setRoles(Tools.set("role1", "role2"));
-         info.setStringPermissions(Tools.set("test1", "test2"));
+         info.setStringPermissions(Tools.set("permission1", "permission2"));
          return info;
       }
       else if("john".equals(username))
       {
          SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
          info.setRoles(Tools.set("role2"));
-         info.setStringPermissions(Tools.set("test2"));
+         info.setStringPermissions(Tools.set("permission2"));
          return info;
       }
       return null;
