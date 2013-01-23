@@ -41,7 +41,6 @@ public class ShiroAuthorizer
    {
       if(isAuthorized(request, json))
       {
-         request.invoke();
          return true;
       }
       else
