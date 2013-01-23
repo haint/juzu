@@ -24,7 +24,7 @@
     <p>If you want to access the user-only <a href="@{Controller.account()}"/>account page</a>,
     you will need to log-in first.</p>
     <% } %>
-    
+    <p>Visit <a href="@{Controller.admin()}">admin page</a> if you are root.</p>
  <h2>Roles</h2>
 
 <p>To show some taglibs, here are the roles you have and don't have. Log out and log back in under different user

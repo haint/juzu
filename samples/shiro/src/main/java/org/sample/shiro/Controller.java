@@ -106,9 +106,15 @@ public class Controller
    @Path("account.gtmpl")
    Template account;
    
-   @View @Route("/account") @RequiresUser @RequiresRoles(value = {"admin"})
+   @View @Route("/account") @RequiresUser
    public Response account(AuthorizationException ex)
    {
       return ex == null ? account.render() : loginForm.render();
+   }
+   
+   @View @Route("/admin") @RequiresRoles("admin")
+   public Response admin(AuthorizationException ex)
+   {
+      return ex == null ? Response.ok("ADMIN AREA") : Response.ok("You dont have admin role"); 
    }
 }
