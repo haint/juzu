@@ -36,6 +36,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresGuest;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
 
 /**
@@ -82,21 +83,22 @@ public class Controller
    @View @Route("/loginForm") @RequiresGuest
    public Response loginForm(AuthorizationException e)
    {
-      return e == null ? loginForm.render() : Response.notFound("you must <a href='" + Controller_.logout() + "'>logout</a> before login again");
+      return e == null ? loginForm.render() : Response.ok("you must <a href='" + Controller_.logout() + "'>logout</a> before login again");
    }
    
    @Action @Route("/doLogin") 
    @Login(username = "uname", password = "pwd", rememberMe = "remember")
-   public Response doLogin(String uname, String pwd, String remember, AuthenticationException ex)
+   public Response doLogin(AuthenticationException ex)
    {
       System.out.println("doLogin invoking");
       return ex == null ? Controller_.index() : Controller_.loginForm();
    }
    
    @Action @Route("/logout")
-   @Logout @RequiresAuthentication
+   @Logout @RequiresUser
    public Response logout(AuthorizationException e)
    {
+      System.out.println("logout invoking");
       return e == null ? Controller_.index() : Controller_.loginForm();
    }
    
@@ -104,7 +106,7 @@ public class Controller
    @Path("account.gtmpl")
    Template account;
    
-   @View @Route("/account") @RequiresUser
+   @View @Route("/account") @RequiresUser @RequiresRoles(value = {"admin"})
    public Response account(AuthorizationException ex)
    {
       return ex == null ? account.render() : loginForm.render();

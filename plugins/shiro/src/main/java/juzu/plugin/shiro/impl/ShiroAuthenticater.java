@@ -39,18 +39,18 @@ import org.apache.shiro.subject.Subject;
 public class ShiroAuthenticater
 {
    
-   private final boolean rememberMe;
+   private final boolean rememberMeSupported;
    
-   public ShiroAuthenticater(boolean rememberMe)
+   public ShiroAuthenticater(boolean rememberMeSupported)
    {
-      this.rememberMe = rememberMe;
+      this.rememberMeSupported = rememberMeSupported;
    }
 
    public void doLogout(Request request)
    {
       SecurityUtils.getSubject().logout();
       request.invoke();
-      if(rememberMe)
+      if(rememberMeSupported)
       {
          RememberMeUtil.forgetIdentity();
       }
@@ -70,7 +70,7 @@ public class ShiroAuthenticater
         
          //
          request.invoke();
-         if(remember)
+         if(remember && rememberMeSupported)
          {
             RememberMeUtil.forgetIdentity();
             RememberMeUtil.rememberSerialized(request.getResponse());

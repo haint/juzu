@@ -47,14 +47,14 @@ public class ShiroDescriptor extends Descriptor
    private final JSON config;
    
    /** . */
-   private boolean rememberMe = false;
+   private boolean rememberMeSupported = false;
    
    ShiroDescriptor(JSON config)
    {
       List<String> supports = (List<String>)config.getList("supports");
       if(supports != null)
       {
-         this.rememberMe = supports.contains(Supported.rememberMe) ? true : false;
+         this.rememberMeSupported = supports.contains(Supported.rememberMe.toString()) ? true : false;
       }
       
       org.apache.shiro.mgt.SecurityManager sm;
@@ -68,9 +68,9 @@ public class ShiroDescriptor extends Descriptor
          SecurityUtils.setSecurityManager(sm);
       }
 
-      ((DefaultSecurityManager)sm).setRememberMeManager(rememberMe ? new JuzuRememberMe() : null);
+      ((DefaultSecurityManager)sm).setRememberMeManager(rememberMeSupported ? new JuzuRememberMe() : null);
       
-      this.authenticater = new ShiroAuthenticater(rememberMe);
+      this.authenticater = new ShiroAuthenticater(rememberMeSupported);
       this.authorizer = new ShiroAuthorizer();
       this.config = config;
    }
@@ -113,6 +113,10 @@ public class ShiroDescriptor extends Descriptor
                      else if("logout".equals(json.get("operator")))
                      {
                         authenticater.doLogout(request);
+                     }
+                     else
+                     {
+                        request.invoke();
                      }
                   }
                }
