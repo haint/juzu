@@ -1,7 +1,1 @@
-@Application(defaultController=A.class)
-@Shiro
-
-package plugin.shiro.authz;
-
-import juzu.Application;
-import juzu.plugin.shiro.*;
+@juzu.Application @juzu.plugin.shiro.Shiro package plugin.shiro.authz;

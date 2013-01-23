@@ -17,13 +17,11 @@
  */
 package juzu.plugin.shiro.common;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.Subject;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>

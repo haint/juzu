@@ -15,53 +15,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package plugin.shiro;
-
-import java.net.URL;
+package plugin.shiro.authc;
 
 import juzu.test.AbstractWebTestCase;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.util.ThreadContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import plugin.shiro.SimpleRealm;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class ShiroAuthenticatingTestCase extends AbstractWebTestCase
+public class LoginTestCase extends AbstractWebTestCase
 {
+   @Drone
+   WebDriver driver;
+   
+   public static Exception exception;
+   
    @Deployment(testable = false)
    public static WebArchive createDeployment() {
-      WebArchive war = createServletDeployment(true, "plugin.shiro.authc");
+      WebArchive war = createServletDeployment(true, "plugin.shiro.authc.login");
       war.addPackages(true, SimpleRealm.class.getPackage());
       return war; 
-   }
-   
-   /** . */
-   private WebDriver driver;
-   
-   @Override
-   public void setUp()
-   {
-      driver = new HtmlUnitDriver();
-   }
-   
-   @Override
-   public void tearDown()
-   {
-      driver.quit();
    }
    
    @AfterClass
@@ -73,68 +63,38 @@ public class ShiroAuthenticatingTestCase extends AbstractWebTestCase
       ThreadContext.remove();
    }
    
-   @ArquillianResource
-   URL deploymentURL;
-
    @Test
    @RunAsClient
-   public void testLoginSuccess() throws Exception 
+   public void testLoginSuccess() throws Exception
    {
-      URL url = deploymentURL.toURI().resolve("authc").toURL();
-      driver.get(url.toString());
-      String guestLink = driver.findElement(By.id("guest")).getAttribute("href");
-      String userLink = driver.findElement(By.id("user")).getAttribute("href");
-      String logoutLink = driver.findElement(By.id("logout")).getAttribute("href");
-      
+      driver.get(deploymentURL.toString());
       WebElement username = driver.findElement(By.id("uname"));
       username.sendKeys("root");
-      
       WebElement password = driver.findElement(By.id("passwd"));
       password.sendKeys("secret");
-      
       WebElement submit = driver.findElement(By.id("submit"));
       submit.click();
       
-      waitForPresent("logged with root");
-      
-      driver.get(guestLink);
-      waitForPresent("Unauthorized");
-      
-      driver.get(userLink);
-      waitForPresent("pass");
-      
-      driver.get(logoutLink);
-      waitForPresent("goodbye");
+      assertNull(exception);
+      waitForPresent("root logged");
    }
    
    @Test
    @RunAsClient
    public void testLoginFailed() throws Exception
    {
-      URL url = deploymentURL.toURI().resolve("authc").toURL();
-      driver.get(url.toString());
-      
-      String guestLink = driver.findElement(By.id("guest")).getAttribute("href");
-      String userLink = driver.findElement(By.id("user")).getAttribute("href");
-      
+      driver.get(deploymentURL.toString());
       WebElement username = driver.findElement(By.id("uname"));
       username.sendKeys("foo");
-      
       WebElement password = driver.findElement(By.id("passwd"));
       password.sendKeys("foo");
-      
       WebElement submit = driver.findElement(By.id("submit"));
       submit.click();
       
-      waitForPresent("Incorrect username or password");
-      
-      driver.get(guestLink);
-      waitForPresent("pass");
-      
-      driver.get(userLink);
-      waitForPresent("Unauthorized");
+      assertNotNull(exception);
+      assertTrue(exception instanceof AuthenticationException);
+      waitForPresent("failed");
    }
-   
    
    private void waitForPresent(String text) throws InterruptedException
    {

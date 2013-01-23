@@ -25,6 +25,7 @@ import juzu.impl.request.ContextualParameter;
 import juzu.impl.request.Parameter;
 import juzu.impl.request.Request;
 import juzu.plugin.shiro.common.ShiroTools;
+import juzu.request.Phase;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
@@ -37,9 +38,9 @@ import org.apache.shiro.authz.annotation.Logical;
  */
 public class ShiroAuthorizer
 {
-   public boolean doAuthorize(Request request, JSON json)
+   public boolean isAuthorized(Request request, JSON json)
    {
-      if(isAuthorized(request, json))
+      if(verify(request, json))
       {
          return true;
       }
@@ -52,13 +53,20 @@ public class ShiroAuthorizer
             {
                if(AuthorizationException.class.isAssignableFrom(parameter.getType()))
                {
-                  request.setArgument(parameter, new AuthorizationException());
+                  request.setArgument(parameter, new AuthorizationException("Can not access " + request.getContext().getMethod() + " with config " + json));
                   request.invoke();
                   return false;
                }
             }
          }
-         request.setResponse(Response.content(401, "Unauthorized"));
+         if(request.getContext().getPhase() instanceof Phase.View || request.getContext().getPhase() instanceof Phase.Resource)
+         {
+            request.setResponse(Response.content(401, "Unauthorized"));
+         }
+         else if(request.getContext().getPhase() instanceof Phase.Action)
+         {
+            throw new AuthorizationException("Can not access " + request.getContext().getMethod() + " with config " + json);
+         }
          return false;
       }
    }
@@ -136,7 +144,7 @@ public class ShiroAuthorizer
       return false;
    }
 
-   private boolean isAuthorized(Request request, JSON config)
+   private boolean verify(Request request, JSON config)
    {
       if(config.get("require") != null)
       {
