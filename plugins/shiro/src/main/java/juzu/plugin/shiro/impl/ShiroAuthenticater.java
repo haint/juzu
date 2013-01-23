@@ -60,13 +60,33 @@ public class ShiroAuthenticater
    {
       Login loginAnnotation = request.getContext().getMethod().getMethod().getAnnotation(Login.class);
       Subject subject = SecurityUtils.getSubject();
-      
-      String susername = request.getParameters().get(loginAnnotation.username())[0];
-      String spassword = request.getParameters().get(loginAnnotation.password())[0];
+
       boolean remember = request.getParameters().get(loginAnnotation.rememberMe()) != null ? true : false;
+      String username = null;
+      String password = null;
       try
       {
-         subject.login(new UsernamePasswordToken(susername, spassword.toCharArray(), remember));
+         username = request.getParameters().get(loginAnnotation.username())[0];
+         password = request.getParameters().get(loginAnnotation.password())[0];
+      }
+      catch (NullPointerException e)
+      {
+         List<Parameter> parameters = request.getContext().getMethod().getParameters();
+         for(Parameter parameter : parameters) 
+         {
+            if(parameter instanceof ContextualParameter && parameter.getType().equals(AuthenticationException.class)) 
+            {
+               AuthenticationException.class.isAssignableFrom(parameter.getType());
+               request.setArgument(parameter, new AuthenticationException(e.getCause()));
+               request.invoke();
+               return;
+            }
+         }
+      }
+      
+      try
+      {
+         subject.login(new UsernamePasswordToken(username, password.toCharArray(), remember));
         
          //
          request.invoke();
