@@ -48,12 +48,14 @@ public class ShiroAuthorizer
          List<Parameter> parameters = request.getContext().getMethod().getParameters();
          for(Parameter parameter : parameters)
          {
-            if(parameter instanceof ContextualParameter && parameter.getType().equals(AuthorizationException.class)) 
+            if(parameter instanceof ContextualParameter) 
             {
-               AuthorizationException.class.isAssignableFrom(parameter.getType());
-               request.setArgument(parameter, new AuthorizationException());
-               request.invoke();
-               return false;
+               if(AuthorizationException.class.isAssignableFrom(parameter.getType()))
+               {
+                  request.setArgument(parameter, new AuthorizationException());
+                  request.invoke();
+                  return false;
+               }
             }
          }
          request.setResponse(Response.content(401, "Unauthorized"));

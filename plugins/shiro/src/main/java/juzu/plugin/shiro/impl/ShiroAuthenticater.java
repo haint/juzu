@@ -74,12 +74,14 @@ public class ShiroAuthenticater
          List<Parameter> parameters = request.getContext().getMethod().getParameters();
          for(Parameter parameter : parameters) 
          {
-            if(parameter instanceof ContextualParameter && parameter.getType().equals(AuthenticationException.class)) 
+            if(parameter instanceof ContextualParameter) 
             {
-               AuthenticationException.class.isAssignableFrom(parameter.getType());
-               request.setArgument(parameter, new AuthenticationException(e.getCause()));
-               request.invoke();
-               return;
+               if(AuthenticationException.class.isAssignableFrom(parameter.getType()))
+               {
+                  request.setArgument(parameter, new AuthenticationException(e.getCause()));
+                  request.invoke();
+                  return;
+               }
             }
          }
       }
@@ -101,10 +103,12 @@ public class ShiroAuthenticater
          List<Parameter> parameters = request.getContext().getMethod().getParameters();
          for(Parameter parameter : parameters) 
          {
-            if(parameter instanceof ContextualParameter && parameter.getType().equals(AuthenticationException.class)) 
+            if(parameter instanceof ContextualParameter) 
             {
-               AuthenticationException.class.isAssignableFrom(parameter.getType());
-               request.setArgument(parameter, e);
+               if(AuthenticationException.class.isAssignableFrom(parameter.getType())) 
+               {
+                  request.setArgument(parameter, e);
+               }
             }
          }
          request.invoke();

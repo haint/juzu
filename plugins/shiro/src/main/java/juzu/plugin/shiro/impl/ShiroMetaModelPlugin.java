@@ -154,7 +154,7 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
       }
       else if(key.getType().equals(Name.create(RequiresGuest.class)))
       {
-         if(json.get("require") != null)
+         if(json.get("require") != null || json.get("permissions") != null || json.get("roles") != null)
          {
             throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
          }
@@ -162,7 +162,7 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
       }
       else if(key.getType().equals(Name.create(RequiresUser.class)))
       {
-         if(json.get("require") != null)
+         if(json.get("require") != null || json.get("permissions") != null || json.get("roles") != null)
          {
             throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
          }
@@ -170,7 +170,7 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
       }
       else if(key.getType().equals(Name.create(RequiresAuthentication.class)))
       {
-         if(json.get("require") != null)
+         if(json.get("require") != null || json.get("permissions") != null || json.get("roles") != null)
          {
             throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
          }
@@ -178,6 +178,10 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
       }
       else if(key.getType().equals(Name.create(RequiresPermissions.class)))
       {
+         if(json.get("require") != null)
+         {
+            throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
+         }
          ArrayList<String> values = (ArrayList<String>)added.get("value");
          String logical = (String)added.get("logical");
          JSON foo = new JSON();
@@ -194,6 +198,10 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
       }
       else if(key.getType().equals(Name.create(RequiresRoles.class)))
       {
+         if(json.get("require") != null)
+         {
+            throw new UnsupportedOperationException("Unsupported multiple requirements at " + key.getElement());
+         }
          ArrayList<String> values = (ArrayList<String>)added.get("value");
          String logical = (String)added.get("logical");
          JSON foo = new JSON();
