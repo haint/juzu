@@ -28,10 +28,10 @@ import juzu.Response;
 import juzu.Route;
 import juzu.View;
 import juzu.impl.request.Request;
-import juzu.plugin.shiro.Login;
-import juzu.plugin.shiro.Logout;
-import juzu.plugin.shiro.common.ShiroTools;
 import juzu.request.RequestContext;
+import juzu.shiro.Login;
+import juzu.shiro.Logout;
+import juzu.shiro.common.ShiroTools;
 import juzu.template.Template;
 
 import org.apache.commons.fileupload.FileItem;

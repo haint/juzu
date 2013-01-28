@@ -38,8 +38,8 @@ import juzu.Response.Render;
 import juzu.Route;
 import juzu.View;
 import juzu.impl.common.Tools;
-import juzu.plugin.shiro.Login;
-import juzu.plugin.shiro.Logout;
+import juzu.shiro.Login;
+import juzu.shiro.Logout;
 import juzu.template.Template;
 
 

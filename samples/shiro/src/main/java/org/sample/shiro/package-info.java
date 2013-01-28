@@ -6,7 +6,7 @@
       @Stylesheet(src="css/style.css", location=AssetLocation.SERVER)
    }
 )
-@Shiro(supports={juzu.plugin.shiro.Supported.rememberMe})
+@Shiro(supports={juzu.shiro.Supported.rememberMe})
 package org.sample.shiro;
 
 import juzu.Application;
@@ -14,4 +14,5 @@ import juzu.asset.AssetLocation;
 import juzu.plugin.asset.Assets;
 import juzu.plugin.asset.Stylesheet;
 import juzu.plugin.portlet.Portlet;
-import juzu.plugin.shiro.Shiro;
+import juzu.shiro.Shiro;
+

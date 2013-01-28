@@ -33,9 +33,8 @@ import juzu.Response;
 import juzu.Response.Render;
 import juzu.Route;
 import juzu.View;
-import juzu.plugin.shiro.Login;
-import juzu.plugin.shiro.Logout;
 import juzu.request.RequestContext;
+import juzu.shiro.Logout;
 import juzu.template.Template;
 
 /**

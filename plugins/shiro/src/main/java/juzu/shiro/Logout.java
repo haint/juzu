@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro;
+package juzu.shiro;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,8 +28,8 @@ import java.lang.annotation.Target;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PACKAGE)
-public @interface Shiro
+@Target(ElementType.METHOD)
+public @interface Logout
 {
-   Supported[] supports();
+
 }
