@@ -31,8 +31,8 @@ import juzu.Response;
 import juzu.Response.Render;
 import juzu.Route;
 import juzu.View;
-import juzu.plugin.shiro.Login;
 import juzu.request.RequestContext;
+import juzu.shiro.Login;
 import juzu.template.Template;
 
 /**

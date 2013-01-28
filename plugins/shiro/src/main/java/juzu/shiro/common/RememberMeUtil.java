@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.shiro.impl;
+package juzu.shiro.common;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -90,7 +90,7 @@ public class RememberMeUtil
    private final static  String DOMAIN_ATTRIBUTE_NAME = "Domain";
 
 
-   static void rememberSerialized(Response response) 
+   public static void rememberSerialized(Response response) 
    {
       //base 64 encode it and store as a cookie:
       DefaultSerializer<PrincipalCollection> serializer = new DefaultSerializer<PrincipalCollection>();
@@ -108,7 +108,7 @@ public class RememberMeUtil
       response.withHeader(COOKIE_HEADER_NAME, headerValue);
    }
 
-   static void forgetIdentity()
+   public static void forgetIdentity()
    {
       Response response = Request.getCurrent().getResponse();
       HttpContext context = Request.getCurrent().getContext().getHttpContext();
