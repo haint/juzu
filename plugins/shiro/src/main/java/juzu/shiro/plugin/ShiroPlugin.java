@@ -18,6 +18,11 @@
 package juzu.shiro.plugin;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import juzu.impl.common.JSON;
 import juzu.impl.metadata.Descriptor;
@@ -25,6 +30,7 @@ import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.plugin.application.ApplicationPlugin;
 import juzu.impl.request.Request;
 import juzu.impl.request.RequestFilter;
+import juzu.impl.resource.ResourceResolver;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -35,6 +41,22 @@ public class ShiroPlugin extends ApplicationPlugin implements RequestFilter
 {
    /** . */
    private ShiroDescriptor descriptor;
+   
+   /** . */
+   @Inject
+   @Named("juzu.resource_resolver.classpath")
+   ResourceResolver classPathResolver;
+   
+   @PostConstruct
+   public void start() throws Exception
+   {
+      String ini = descriptor.getConfig().getString("ini");
+      if(ini != null)
+      {
+         URL iniURL = classPathResolver.resolve(ini);
+         descriptor.setShiroIniURL(iniURL);
+      }
+   }
    
    public ShiroPlugin()
    {

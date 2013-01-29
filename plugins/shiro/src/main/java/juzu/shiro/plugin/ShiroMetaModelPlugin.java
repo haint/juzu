@@ -86,8 +86,10 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
       if(key.getType().equals(Name.create(Shiro.class)))
       {
          JSON json = new JSON();
-         Object obj = added.get("supports");
-         json.set("supports", obj);
+         Object supports = added.get("supports");
+         json.set("supports", supports);
+         Object ini = added.get("ini");
+         json.set("ini", ini);
          enableMap.put(handle, json);
       }
       else 
@@ -262,6 +264,8 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
             for(MethodMetaModel method : controller)
             {
                annotations = methods.get(method.getHandle());
+               String methodId = method.getHandle().getMethodHandle().toString();
+               
                if(annotations != null) 
                {
                   JSON controllerJSON = config.getJSON(controller.getHandle().getFQN().toString());
@@ -276,7 +280,7 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
                   {
                      emitConfig(methodJSON, entry.getKey(), entry.getValue());
                   }
-                  String methodId = method.getHandle().getMethodHandle().toString();
+                  
                   JSON methodsJSON = controllerJSON.getJSON("methods");
                   if(methodsJSON == null)
                   {
