@@ -18,6 +18,7 @@
 package juzu.shiro.plugin;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
 import juzu.shiro.Supported;
+import juzu.shiro.impl.JuzuRealm;
 import juzu.shiro.impl.JuzuRememberMe;
 import juzu.shiro.impl.SecurityManagerScoped;
 import juzu.shiro.impl.ShiroAuthenticator;
@@ -35,9 +37,10 @@ import juzu.shiro.impl.SubjectScoped;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.shiro.config.Ini;
+import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.RealmSecurityManager;
-import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -51,16 +54,19 @@ public class ShiroDescriptor extends Descriptor
 {
    /** . */
    private final ShiroAuthorizor authorizer;
-   
+
    /** . */
    private final ShiroAuthenticator authenticater;
-   
+
    /** . */
    private final JSON config;
-   
+
    /** . */
    private boolean rememberMeSupported = false;
-   
+
+   /** . */
+   private URL shiroIniURL;
+
    ShiroDescriptor(JSON config)
    {
       List<String> supports = (List<String>)config.getList("supports");
@@ -68,35 +74,62 @@ public class ShiroDescriptor extends Descriptor
       {
          this.rememberMeSupported = supports.contains(Supported.rememberMe.toString()) ? true : false;
       }
-      
+
       this.authenticater = new ShiroAuthenticator(rememberMeSupported);
       this.authorizer = new ShiroAuthorizor();
       this.config = config;
    }
-   
+
+   public void setShiroIniURL(URL iniURL)
+   {
+      this.shiroIniURL = iniURL;
+   }
+
+   public JSON getConfig() 
+   {
+      return config;
+   }
+
    private void start(Request request) throws InvocationTargetException
    {
+      //
       org.apache.shiro.mgt.SecurityManager currentManager = null;
       try
       {
          currentManager = SecurityUtils.getSecurityManager();
       }
-      catch (UnavailableSecurityManagerException e)
+      catch (UnavailableSecurityManagerException e1)
       {
          if(request.getBridge().getSessionValue("currentManager") != null)
          {
             currentManager = (DefaultSecurityManager)request.getBridge().getSessionValue("currentManager").get();
          }
+         else if(shiroIniURL != null)
+         {
+            Ini ini = new Ini();
+            try 
+            {
+               ini.load(shiroIniURL.openStream());
+               IniSecurityManagerFactory factory = new IniSecurityManagerFactory(ini);
+               currentManager = factory.getInstance();
+            }
+            catch(Exception e2)
+            {
+               throw new ApplicationException(e2);
+            }
+         }
          else
          {
             currentManager = new DefaultSecurityManager();
-            ((DefaultSecurityManager)currentManager).setRememberMeManager(rememberMeSupported ? new JuzuRememberMe() : null);
-            SecurityManagerScoped value = new SecurityManagerScoped(currentManager);
-            request.getBridge().setSessionValue("currentManager", value);
          }
       }
-      
-      BeanLifeCycle bean = request.getApplication().getInjectionContext().get(AuthorizingRealm.class);
+
+      if(rememberMeSupported && currentManager instanceof DefaultSecurityManager)
+      {
+         ((DefaultSecurityManager)currentManager).setRememberMeManager(new JuzuRememberMe());
+      }
+
+      BeanLifeCycle bean = request.getApplication().getInjectionContext().get(JuzuRealm.class);
       if(bean != null)
       {
          if(!(currentManager instanceof RealmSecurityManager))
@@ -124,6 +157,10 @@ public class ShiroDescriptor extends Descriptor
          }
       }
 
+      SecurityManagerScoped managerValue = new SecurityManagerScoped(currentManager);
+      request.getBridge().setSessionValue("currentManager", managerValue);
+
+      //
       Subject currentUser = null;
       if(request.getBridge().getSessionValue("currentUser") != null)
       {
@@ -133,8 +170,8 @@ public class ShiroDescriptor extends Descriptor
       {
          Subject.Builder builder = new Subject.Builder(currentManager);
          currentUser = builder.buildSubject();
-         SubjectScoped value = new SubjectScoped(currentUser);
-         request.getBridge().setSessionValue("currentUser", value);
+         SubjectScoped subjectValue = new SubjectScoped(currentUser);
+         request.getBridge().setSessionValue("currentUser", subjectValue);
       }
 
       //
@@ -147,14 +184,14 @@ public class ShiroDescriptor extends Descriptor
       ThreadContext.unbindSubject();
       ThreadContext.unbindSecurityManager();
    }
-   
+
    public void invoke(Request request) throws ApplicationException, InvocationTargetException
    {
       try
       {
          //
          start(request);
-         
+
          //
          String methodId = request.getContext().getMethod().getHandle().toString();
          String controllerId = methodId.substring(0, methodId.indexOf('#'));
@@ -163,52 +200,70 @@ public class ShiroDescriptor extends Descriptor
          if(controllerJSON == null)
          {
             request.invoke();
+            return;
          }
-         
+
          //
+         
+         JSON methodsJSON = controllerJSON.getJSON("methods");
+         JSON methodJSON = null;
+         
          if(controllerJSON.get("require") != null)
          {
-            authorizer.isAuthorized(request, controllerJSON);
-         }
-         else
-         {
-            JSON methodsJSON = controllerJSON.getJSON("methods");
-            if(methodsJSON != null)
+            if(authorizer.isAuthorized(request, controllerJSON))
             {
-               JSON json = methodsJSON.getJSON(methodId);
-               
-               if(json != null)
-               {
-                  if(authorizer.isAuthorized(request, json))
-                  {
-                     if("login".equals(json.get("operator")))
-                     {
-                        authenticater.doLogin(request);
-                     }
-                     else if("logout".equals(json.get("operator")))
-                     {
-                        authenticater.doLogout(request);
-                     }
-                     else
-                     {
-                        request.invoke();
-                     }
-                  }
-               }
-               else
+               if(methodsJSON == null)
                {
                   request.invoke();
                }
+               methodJSON = methodsJSON.getJSON(methodId);
+               if(methodJSON == null)
+               {
+                  request.invoke();
+               }
+               
+               doInvoke(request, methodJSON);
             }
-            else
-            {
-               request.invoke();
-            }
+            return;
          }
+         
+         if(methodsJSON == null)
+         {
+            request.invoke();
+            return;
+         }
+         
+         methodJSON = methodsJSON.getJSON(methodId);
+         if(methodJSON == null) 
+         {
+            request.invoke();
+            return;
+         }
+         
+         doInvoke(request, methodJSON);
       } 
       finally
       {
          end();
+      }
+   }
+   
+   private void doInvoke(Request request, JSON json)
+   {
+      if(authorizer.isAuthorized(request, json))
+      {
+         if("login".equals(json.get("operator")))
+         {
+            authenticater.doLogin(request);
+         }
+         else if("logout".equals(json.get("operator")))
+         {
+            authenticater.doLogout(request);
+         }
+         else
+         {
+            request.invoke();
+         }
       }
    }
 }
