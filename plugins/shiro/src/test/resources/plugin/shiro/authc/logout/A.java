@@ -23,8 +23,11 @@ import javax.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 
+import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.authc.LogoutTestCase;
 
 import juzu.Action;
@@ -51,9 +54,12 @@ public class A
    @Route("/")
    public Response index() 
    {
+      AbstractShiroTestCase.manager = (DefaultSecurityManager)ThreadContext.getSecurityManager();
+      
       Subject subject = SecurityUtils.getSubject(); 
       subject.login(new UsernamePasswordToken("root", "secret".toCharArray()));
       LogoutTestCase.currentUser = subject;
+      
       return Response.ok("<a id='logout' href='" + A_.logout() + "'>logout</a>");
    }
    

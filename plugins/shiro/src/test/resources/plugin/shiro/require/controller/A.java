@@ -27,7 +27,10 @@ import juzu.View;
 
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.annotation.RequiresUser;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.util.ThreadContext;
 
+import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.authz.RequireAtControllerTestCase;
 
 /**
@@ -45,7 +48,10 @@ public class A
    @Route("/")
    public Response index(AuthorizationException e) 
    {
+      AbstractShiroTestCase.manager = (DefaultSecurityManager)ThreadContext.getSecurityManager();
+      
       RequireAtControllerTestCase.exception = e;
+      
       return Response.ok("<a id='view' href='" + A_.view() +"'>view</a>" +
       		"<a id='resource' href='" + A_.resource() + "'>resource</a>" +
       		"<a id='action' href='" + A_.action() + "'>action</a>");

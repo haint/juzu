@@ -35,12 +35,12 @@ import org.apache.shiro.subject.Subject;
  * @version $Id$
  *
  */
-public class ShiroAuthenticater
+public class ShiroAuthenticator
 {
    
    private final boolean rememberMeSupported;
    
-   public ShiroAuthenticater(boolean rememberMeSupported)
+   public ShiroAuthenticator(boolean rememberMeSupported)
    {
       this.rememberMeSupported = rememberMeSupported;
    }

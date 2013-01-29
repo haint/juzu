@@ -22,7 +22,10 @@ import javax.inject.Inject;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.util.ThreadContext;
 
+import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.authc.LoginTestCase;
 
 import juzu.Action;
@@ -57,11 +60,12 @@ public class A
    @View @Route("/index")
    public Response.Content index()
    {
+      AbstractShiroTestCase.manager = (DefaultSecurityManager)ThreadContext.getSecurityManager();
       return Response.ok(
          "<form action='" +A_.login()+ "' method='post'>" +
                "<input type='text' id='uname' name='uname'/>" +
                "<input type='password' id='passwd' name='passwd'/>" +
-               "<input type='submit' id='submit' name='submit' value='Login'/>" + 
+               "<input type='submit' id='submit' name='submit' value='Login'/>" +
          "</form>");
    }
    
