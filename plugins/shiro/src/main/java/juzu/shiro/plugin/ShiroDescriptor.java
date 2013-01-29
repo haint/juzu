@@ -36,6 +36,7 @@ import juzu.shiro.impl.SubjectScoped;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
@@ -98,11 +99,15 @@ public class ShiroDescriptor extends Descriptor
       BeanLifeCycle bean = request.getApplication().getInjectionContext().get(AuthorizingRealm.class);
       if(bean != null)
       {
+         if(!(currentManager instanceof RealmSecurityManager))
+         {
+            throw new UnsupportedOperationException("The current security manager unsupported realm");
+         }
          Realm realm = (Realm)bean.get();
-         Collection<Realm> realms = ((DefaultSecurityManager)currentManager).getRealms();
+         Collection<Realm> realms = ((RealmSecurityManager)currentManager).getRealms();
          if(realms == null)
          {
-            ((DefaultSecurityManager)currentManager).setRealm(realm);
+            ((RealmSecurityManager)currentManager).setRealm(realm);
          }
          else
          {
@@ -115,7 +120,7 @@ public class ShiroDescriptor extends Descriptor
                   break;
                }
             }
-            if(notExisted) ((DefaultSecurityManager)currentManager).getRealms().add(realm);
+            if(notExisted) ((RealmSecurityManager)currentManager).getRealms().add(realm);
          }
       }
 
