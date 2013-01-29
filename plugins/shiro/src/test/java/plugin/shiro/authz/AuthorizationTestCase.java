@@ -20,21 +20,16 @@ package plugin.shiro.authz;
 import java.util.HashMap;
 import java.util.Map;
 
-import juzu.test.AbstractWebTestCase;
-
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.util.ThreadContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.SimpleRealm;
 
 /**
@@ -42,22 +37,13 @@ import plugin.shiro.SimpleRealm;
  * @version $Id$
  *
  */
-public class AuthorizationTestCase extends AbstractWebTestCase
+public class AuthorizationTestCase extends AbstractShiroTestCase
 {
    @Deployment(testable = false)
    public static WebArchive createDeployment() {
       WebArchive war = createServletDeployment(true, "plugin.shiro.authz");
       war.addPackages(true, SimpleRealm.class.getPackage());
       return war; 
-   }
-   
-   @AfterClass
-   public static void cleanup()
-   {
-      DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
-      SecurityUtils.setSecurityManager(null);
-      sm.destroy();
-      ThreadContext.remove();
    }
    
    private static Map<String, String> urls = new HashMap<String, String>();

@@ -17,32 +17,32 @@
  */
 package juzu.shiro.impl;
 
-import org.apache.shiro.subject.Subject;
-
 import juzu.impl.inject.Scoped;
+
+import org.apache.shiro.mgt.SecurityManager;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class ShiroScoped implements Scoped
+public class SecurityManagerScoped implements Scoped
 {
    
-   private Subject subject;
+   private SecurityManager manager;
    
-   ShiroScoped(Subject subject)
+   public SecurityManagerScoped(SecurityManager manager)
    {
-      this.subject = subject;
+      this.manager = manager;
    }
 
    public Object get()
    {
-      return subject;
+      return manager;
    }
 
    public void destroy()
    {
-      subject = null;
+      manager = null;
    }
 }

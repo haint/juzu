@@ -27,7 +27,10 @@ import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.util.ThreadContext;
 
+import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.authz.AuthorizationTestCase;
 
 import juzu.Action;
@@ -56,6 +59,8 @@ public class A
    @View @Route("/")
    public Response index() throws Exception 
    {
+      AbstractShiroTestCase.manager = (DefaultSecurityManager)ThreadContext.getSecurityManager();
+      
       String resp =
       "<a id='root' href='" + A_.login("root", "secret") + "'>root</a>" +
       "<a id='john' href='" + A_.login("john", "foo") + "'>john</a>" +

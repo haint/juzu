@@ -18,21 +18,28 @@
 package juzu.shiro.plugin;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 
 import juzu.impl.common.JSON;
+import juzu.impl.inject.spi.BeanLifeCycle;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
 import juzu.shiro.Supported;
 import juzu.shiro.impl.JuzuRememberMe;
-import juzu.shiro.impl.ShiroAuthenticater;
-import juzu.shiro.impl.ShiroAuthorizer;
-import juzu.shiro.impl.ShiroRequestLifecycle;
+import juzu.shiro.impl.SecurityManagerScoped;
+import juzu.shiro.impl.ShiroAuthenticator;
+import juzu.shiro.impl.ShiroAuthorizor;
+import juzu.shiro.impl.SubjectScoped;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -42,10 +49,10 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 public class ShiroDescriptor extends Descriptor
 {
    /** . */
-   private final ShiroAuthorizer authorizer;
+   private final ShiroAuthorizor authorizer;
    
    /** . */
-   private final ShiroAuthenticater authenticater;
+   private final ShiroAuthenticator authenticater;
    
    /** . */
    private final JSON config;
@@ -61,29 +68,89 @@ public class ShiroDescriptor extends Descriptor
          this.rememberMeSupported = supports.contains(Supported.rememberMe.toString()) ? true : false;
       }
       
-      org.apache.shiro.mgt.SecurityManager sm;
+      this.authenticater = new ShiroAuthenticator(rememberMeSupported);
+      this.authorizer = new ShiroAuthorizor();
+      this.config = config;
+   }
+   
+   private void start(Request request) throws InvocationTargetException
+   {
+      org.apache.shiro.mgt.SecurityManager currentManager = null;
       try
       {
-         sm = SecurityUtils.getSecurityManager();
+         currentManager = SecurityUtils.getSecurityManager();
       }
       catch (UnavailableSecurityManagerException e)
       {
-         sm = new DefaultSecurityManager();
-         SecurityUtils.setSecurityManager(sm);
+         if(request.getBridge().getSessionValue("currentManager") != null)
+         {
+            currentManager = (DefaultSecurityManager)request.getBridge().getSessionValue("currentManager").get();
+         }
+         else
+         {
+            currentManager = new DefaultSecurityManager();
+            ((DefaultSecurityManager)currentManager).setRememberMeManager(rememberMeSupported ? new JuzuRememberMe() : null);
+            SecurityManagerScoped value = new SecurityManagerScoped(currentManager);
+            request.getBridge().setSessionValue("currentManager", value);
+         }
+      }
+      
+      BeanLifeCycle bean = request.getApplication().getInjectionContext().get(AuthorizingRealm.class);
+      if(bean != null)
+      {
+         Realm realm = (Realm)bean.get();
+         Collection<Realm> realms = ((DefaultSecurityManager)currentManager).getRealms();
+         if(realms == null)
+         {
+            ((DefaultSecurityManager)currentManager).setRealm(realm);
+         }
+         else
+         {
+            boolean notExisted = false;
+            for(Realm sel : realms)
+            {
+               if(sel.getName().equals(realm.getName()))
+               {
+                  notExisted = true;
+                  break;
+               }
+            }
+            if(notExisted) ((DefaultSecurityManager)currentManager).getRealms().add(realm);
+         }
       }
 
-      ((DefaultSecurityManager)sm).setRememberMeManager(rememberMeSupported ? new JuzuRememberMe() : null);
-      
-      this.authenticater = new ShiroAuthenticater(rememberMeSupported);
-      this.authorizer = new ShiroAuthorizer();
-      this.config = config;
+      Subject currentUser = null;
+      if(request.getBridge().getSessionValue("currentUser") != null)
+      {
+         currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
+      }
+      else
+      {
+         Subject.Builder builder = new Subject.Builder(currentManager);
+         currentUser = builder.buildSubject();
+         SubjectScoped value = new SubjectScoped(currentUser);
+         request.getBridge().setSessionValue("currentUser", value);
+      }
+
+      //
+      ThreadContext.bind(currentUser);
+      ThreadContext.bind(currentManager);
+   }
+
+   private void end()
+   {
+      ThreadContext.unbindSubject();
+      ThreadContext.unbindSecurityManager();
    }
    
    public void invoke(Request request) throws ApplicationException, InvocationTargetException
    {
       try
       {
-         ShiroRequestLifecycle.begin(request);
+         //
+         start(request);
+         
+         //
          String methodId = request.getContext().getMethod().getHandle().toString();
          String controllerId = methodId.substring(0, methodId.indexOf('#'));
          methodId = methodId.substring(controllerId.length() + 1);
@@ -136,7 +203,7 @@ public class ShiroDescriptor extends Descriptor
       } 
       finally
       {
-         ShiroRequestLifecycle.end(request);
+         end();
       }
    }
 }

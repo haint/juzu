@@ -36,7 +36,7 @@ import org.apache.shiro.authz.annotation.Logical;
  * @version $Id$
  *
  */
-public class ShiroAuthorizer
+public class ShiroAuthorizor
 {
    public boolean isAuthorized(Request request, JSON json)
    {

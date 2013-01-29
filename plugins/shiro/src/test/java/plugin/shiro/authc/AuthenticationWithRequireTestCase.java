@@ -17,22 +17,17 @@
  */
 package plugin.shiro.authc;
 
-import juzu.test.AbstractWebTestCase;
-
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.util.ThreadContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.SimpleRealm;
 
 /**
@@ -40,7 +35,7 @@ import plugin.shiro.SimpleRealm;
  * @version $Id$
  *
  */
-public class AuthenticationWithRequireTestCase extends AbstractWebTestCase
+public class AuthenticationWithRequireTestCase extends AbstractShiroTestCase
 {
    @Drone
    WebDriver driver;
@@ -54,15 +49,6 @@ public class AuthenticationWithRequireTestCase extends AbstractWebTestCase
       WebArchive war = createServletDeployment(true, "plugin.shiro.authc.require");
       war.addPackages(true, SimpleRealm.class.getPackage());
       return war; 
-   }
-   
-   @AfterClass
-   public static void cleanup()
-   {
-      DefaultSecurityManager sm = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
-      SecurityUtils.setSecurityManager(null);
-      sm.destroy();
-      ThreadContext.remove();
    }
    
    @Test

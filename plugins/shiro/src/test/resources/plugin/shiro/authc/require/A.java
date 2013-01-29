@@ -25,7 +25,10 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresUser;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.util.ThreadContext;
 
+import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.authc.AuthenticationWithRequireTestCase;
 
 import juzu.Action;
@@ -71,6 +74,8 @@ public class A
    @View @Route("/index")
    public Response.Content index()
    {
+      AbstractShiroTestCase.manager = (DefaultSecurityManager)ThreadContext.getSecurityManager();
+      
       return Response.ok(
          "<a id='logout' href='" + A_.logout() + "'>logout</a>" +
          "<form action='" + A_.login() + "' method='post'>" +
