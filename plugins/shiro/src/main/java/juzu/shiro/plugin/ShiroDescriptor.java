@@ -214,15 +214,20 @@ public class ShiroDescriptor extends Descriptor
                if(methodsJSON == null)
                {
                   request.invoke();
+                  return;
                }
+               
                methodJSON = methodsJSON.getJSON(methodId);
                if(methodJSON == null)
                {
                   request.invoke();
+                  return;
                }
                
                doInvoke(request, methodJSON);
+               return;
             }
+            
             return;
          }
          

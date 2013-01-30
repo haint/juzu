@@ -35,7 +35,7 @@ import plugin.shiro.SimpleRealm;
  * @version $Id$
  *
  */
-public class AuthenticationWithRequireTestCase extends AbstractShiroTestCase
+public class AuthcWithRequireTestCase extends AbstractShiroTestCase
 {
    @Drone
    WebDriver driver;
