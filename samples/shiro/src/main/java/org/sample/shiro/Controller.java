@@ -23,18 +23,14 @@ import javax.inject.Inject;
 
 import juzu.Action;
 import juzu.Path;
-import juzu.Resource;
 import juzu.Response;
 import juzu.Route;
 import juzu.View;
-import juzu.impl.request.Request;
-import juzu.request.RequestContext;
 import juzu.shiro.Login;
 import juzu.shiro.Logout;
 import juzu.shiro.common.ShiroTools;
 import juzu.template.Template;
 
-import org.apache.commons.fileupload.FileItem;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;

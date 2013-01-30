@@ -15,15 +15,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package plugin.shiro.config;
+package plugin.shiro.config.classpath;
 
-import org.apache.shiro.authz.annotation.RequiresGuest;
+import juzu.Route;
+import juzu.View;
+
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.util.ThreadContext;
 
 import plugin.shiro.AbstractShiroTestCase;
-import juzu.Route;
-import juzu.View;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -32,7 +32,6 @@ import juzu.View;
  */
 public class A
 {
-
    @View
    @Route("/")
    public void index() {

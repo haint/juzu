@@ -21,7 +21,8 @@
 
     <dependency>
       <groupId>org.juzu</groupId>
-      <artifactId>juzu-core</artifactId>
+			<artifactId>juzu-core</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
     <dependency>
@@ -74,4 +75,14 @@
 		</dependency>
   </dependencies>
 
+	<build>
+		<plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <compilerArgument>-proc:none</compilerArgument>
+          </configuration>
+        </plugin>
+		</plugins>
+	</build>
 </project>

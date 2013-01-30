@@ -17,6 +17,8 @@
  */
 package plugin.shiro.config;
 
+import java.io.File;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -31,14 +33,16 @@ import plugin.shiro.AbstractShiroTestCase;
  * @version $Id$
  *
  */
-public class LoadConfigTestCase extends AbstractShiroTestCase
+public class LoadServerpathConfigTestCase extends AbstractShiroTestCase
 {
    @Drone
    WebDriver driver;
    
    @Deployment(testable = false)
    public static WebArchive createDeployment() {
-      return createServletDeployment(true, "plugin.shiro.config");
+      WebArchive war = createServletDeployment(true, "plugin.shiro.config.serverpath");
+      war.addAsWebInfResource(new File("src/test/resources/shiro.ini"));
+      return war;
    }
    
    @Test

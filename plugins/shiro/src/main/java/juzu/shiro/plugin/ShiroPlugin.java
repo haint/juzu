@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import juzu.asset.AssetLocation;
 import juzu.impl.common.JSON;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
@@ -47,15 +48,40 @@ public class ShiroPlugin extends ApplicationPlugin implements RequestFilter
    @Named("juzu.resource_resolver.classpath")
    ResourceResolver classPathResolver;
    
+   /** . */
+   @Inject
+   @Named("juzu.resource_resolver.server")
+   ResourceResolver serverResolver;
+   
    @PostConstruct
    public void start() throws Exception
    {
-      String ini = descriptor.getConfig().getString("ini");
-      if(ini != null)
+      JSON config = descriptor.getConfig().getJSON("config");
+      if(config == null) return;
+
+      AssetLocation location = AssetLocation.CLASSPATH;
+      if(config.get("location") != null)
       {
-         URL iniURL = classPathResolver.resolve(ini);
-         descriptor.setShiroIniURL(iniURL);
+         location = AssetLocation.valueOf(config.getString("location"));
       }
+      
+      URL iniURL = null;
+      switch (location)
+      {
+         case CLASSPATH :
+            iniURL = classPathResolver.resolve(config.getString("value"));
+            break;
+         case SERVER:
+            iniURL = serverResolver.resolve(config.getString("value"));
+            break;
+         case URL:
+            iniURL = new URL(config.getString("value"));
+            break;
+         default :
+            break;
+      }
+      
+      descriptor.setShiroIniURL(iniURL);
    }
    
    public ShiroPlugin()
