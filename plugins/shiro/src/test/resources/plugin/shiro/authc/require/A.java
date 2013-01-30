@@ -29,7 +29,7 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.util.ThreadContext;
 
 import plugin.shiro.AbstractShiroTestCase;
-import plugin.shiro.authc.AuthenticationWithRequireTestCase;
+import plugin.shiro.authc.AuthcWithRequireTestCase;
 
 import juzu.Action;
 import juzu.Path;
@@ -58,8 +58,8 @@ public class A
    @Login(username = "uname", password = "passwd") @RequiresGuest
    public Response login(AuthenticationException e1, AuthorizationException e2)
    {
-      AuthenticationWithRequireTestCase.authcException = e1;
-      AuthenticationWithRequireTestCase.authzException = e2;
+      AuthcWithRequireTestCase.authcException = e1;
+      AuthcWithRequireTestCase.authzException = e2;
       return e1 == null && e2 == null ? A_.success() : A_.failed();
    }
    
@@ -68,7 +68,7 @@ public class A
    @Logout @RequiresUser
    public void logout(AuthorizationException e)
    {
-      AuthenticationWithRequireTestCase.authzException = e;
+      AuthcWithRequireTestCase.authzException = e;
    }
 
    @View @Route("/index")

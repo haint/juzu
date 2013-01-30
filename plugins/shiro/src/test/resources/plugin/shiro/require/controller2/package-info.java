@@ -1,0 +1,1 @@
+@juzu.Application @juzu.shiro.Shiro package plugin.shiro.require.controller2;
