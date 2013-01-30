@@ -1,1 +1,0 @@
-@juzu.Application @juzu.shiro.Shiro(ini="/plugin/shiro/config/shiro.ini") package plugin.shiro.config;

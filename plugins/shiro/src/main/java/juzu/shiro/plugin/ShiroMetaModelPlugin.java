@@ -88,8 +88,8 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
          JSON json = new JSON();
          Object supports = added.get("supports");
          json.set("supports", supports);
-         Object ini = added.get("ini");
-         json.set("ini", ini);
+         Object config = added.get("config");
+         json.set("config", config);
          enableMap.put(handle, json);
       }
       else 

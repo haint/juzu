@@ -204,7 +204,6 @@ public class ShiroDescriptor extends Descriptor
          }
 
          //
-         
          JSON methodsJSON = controllerJSON.getJSON("methods");
          JSON methodJSON = null;
          

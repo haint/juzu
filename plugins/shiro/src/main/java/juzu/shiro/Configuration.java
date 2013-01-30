@@ -17,10 +17,11 @@
  */
 package juzu.shiro;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import juzu.asset.AssetLocation;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -28,10 +29,10 @@ import java.lang.annotation.Target;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PACKAGE)
-public @interface Shiro
+@Target({})
+public @interface Configuration
 {
-   Configuration config() default @Configuration;
+   String value() default "";
    
-   Supported[] supports() default {};
+   AssetLocation location() default AssetLocation.CLASSPATH;
 }
