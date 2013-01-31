@@ -71,12 +71,13 @@ public class RequireAtControllerTestCase extends AbstractShiroTestCase
       driver.get(deploymentURL.toString());
       WebElement action = driver.findElement(By.id("action"));
       action.click();
+      waitForPresent("Unauthorized");
    }
    
    private void waitForPresent(String text) throws InterruptedException
    {
       for (int second = 0;; second++) {
-         if (second >= 60) fail("timeout");
+         if (second >= 10) fail("timeout");
          try 
          {
             if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*"+ text +"[\\s\\S]*$"))
