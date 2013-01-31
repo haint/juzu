@@ -107,14 +107,17 @@ public class ShiroAuthenticator
                if(AuthenticationException.class.isAssignableFrom(parameter.getType())) 
                {
                   request.setArgument(parameter, e);
+                  request.invoke();
+                  if(remember)
+                  {
+                     RememberMeUtil.forgetIdentity();
+                  }
+                  return;
                }
             }
          }
-         request.invoke();
-         if(remember)
-         {
-            RememberMeUtil.forgetIdentity();
-         }
+         
+         throw e;
       }
    }
 }

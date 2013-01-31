@@ -19,12 +19,10 @@ package juzu.shiro.impl;
 
 import java.util.List;
 
-import juzu.Response;
 import juzu.impl.common.JSON;
 import juzu.impl.request.ContextualParameter;
 import juzu.impl.request.Parameter;
 import juzu.impl.request.Request;
-import juzu.request.Phase;
 import juzu.shiro.common.ShiroTools;
 
 import org.apache.shiro.SecurityUtils;
@@ -59,15 +57,8 @@ public class ShiroAuthorizor
                }
             }
          }
-         if(request.getContext().getPhase() instanceof Phase.View || request.getContext().getPhase() instanceof Phase.Resource)
-         {
-            request.setResponse(Response.content(401, "Unauthorized"));
-         }
-         else if(request.getContext().getPhase() instanceof Phase.Action)
-         {
-            throw new AuthorizationException("Can not access " + request.getContext().getMethod() + " with config " + json);
-         }
-         return false;
+         
+         throw new AuthorizationException("Can not access " + request.getContext().getMethod() + " with config " + json);
       }
    }
    

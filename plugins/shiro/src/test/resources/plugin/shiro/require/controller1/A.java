@@ -59,22 +59,23 @@ public class A
    
    @View
    @Route("/view")
-   public Response view()
+   public Response view(AuthorizationException e)
    {
-      return Response.ok("pass");
+      return e == null ? Response.ok("pass") : Response.ok("Unauthorized");
    }
    
    @Resource
    @Route("/resource")
-   public Response resource()
+   public Response resource(AuthorizationException e)
    {
-      return Response.content(200, "pass");
+      return e == null ? Response.ok("pass") : Response.ok("Unauthorized");
    }
    
    @Action
    @Route("/action")
-   public Response action()
+   public Response action(AuthorizationException e)
    {
+      //Ignore exception
       return A_.view();
    }
 }
