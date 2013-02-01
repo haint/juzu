@@ -17,6 +17,7 @@
  */
 package juzu.shiro.impl;
 
+import org.apache.shiro.cache.MemoryConstrainedCacheManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 
 /**
@@ -26,5 +27,10 @@ import org.apache.shiro.realm.AuthorizingRealm;
  */
 public abstract class JuzuRealm extends AuthorizingRealm 
 {
-
+   public JuzuRealm()
+   {
+      setCacheManager(new MemoryConstrainedCacheManager());
+   }
+   
+   public abstract String getName();
 }

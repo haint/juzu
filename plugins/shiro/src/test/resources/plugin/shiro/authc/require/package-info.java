@@ -1,1 +1,1 @@
-@juzu.Application @juzu.shiro.Shiro package plugin.shiro.authc.require;
+@juzu.Application @juzu.shiro.Shiro(realms = {plugin.shiro.SimpleRealm.class}) package plugin.shiro.authc.require;

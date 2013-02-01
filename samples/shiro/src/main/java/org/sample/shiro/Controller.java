@@ -47,9 +47,6 @@ public class Controller
 {
    private final String[] ROLES = { "admin", "president", "darklord", "goodguy", "schwartz" };
    
-   @Inject
-   org.sample.shiro.realm.SimpleRealm userHandle;
-   
    @Inject @Path("index.gtmpl") org.sample.shiro.templates.index index;
    
    @View @Route("/")
@@ -89,7 +86,6 @@ public class Controller
    @Login(username = "uname", password = "pwd", rememberMe = "remember")
    public Response doLogin(AuthenticationException ex)
    {
-      System.out.println("doLogin invoking");
       return ex == null ? Controller_.index() : Controller_.loginForm();
    }
    
@@ -97,7 +93,6 @@ public class Controller
    @Logout @RequiresUser
    public Response logout(AuthorizationException e)
    {
-      System.out.println("logout invoking");
       return e == null ? Controller_.index() : Controller_.loginForm();
    }
    

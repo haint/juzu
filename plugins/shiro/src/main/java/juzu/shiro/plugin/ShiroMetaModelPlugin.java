@@ -19,6 +19,8 @@ package juzu.shiro.plugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -86,10 +88,18 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
       if(key.getType().equals(Name.create(Shiro.class)))
       {
          JSON json = new JSON();
-         Object supports = added.get("supports");
-         json.set("supports", supports);
-         Object config = added.get("config");
-         json.set("config", config);
+         json.set("rememberMe", added.get("rememberMe"));
+         json.set("config", added.get("config"));
+         List<ElementHandle.Class> realms = (List<juzu.impl.compiler.ElementHandle.Class>)added.get("realms");
+         if(realms != null)
+         {
+            Set<String> holder = new HashSet<String>();
+            for(ElementHandle.Class clazz : realms)
+            {
+               holder.add(clazz.getFQN().toString());
+            }
+            json.set("realms", holder);
+         }
          enableMap.put(handle, json);
       }
       else 

@@ -33,5 +33,7 @@ public @interface Shiro
 {
    Configuration config() default @Configuration;
    
-   Supported[] supports() default {};
+   boolean rememberMe() default false;
+   
+   Class<?>[] realms()  default {};
 }

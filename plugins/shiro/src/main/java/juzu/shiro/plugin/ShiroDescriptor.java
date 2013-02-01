@@ -22,12 +22,12 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
+import juzu.impl.bridge.spi.RequestBridge;
 import juzu.impl.common.JSON;
-import juzu.impl.inject.spi.BeanLifeCycle;
+import juzu.impl.inject.spi.InjectionContext;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
-import juzu.shiro.Supported;
 import juzu.shiro.impl.JuzuRealm;
 import juzu.shiro.impl.JuzuRememberMe;
 import juzu.shiro.impl.SecurityManagerScoped;
@@ -41,6 +41,7 @@ import org.apache.shiro.config.Ini;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.RealmSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -69,12 +70,7 @@ public class ShiroDescriptor extends Descriptor
 
    ShiroDescriptor(JSON config)
    {
-      List<String> supports = (List<String>)config.getList("supports");
-      if(supports != null)
-      {
-         this.rememberMeSupported = supports.contains(Supported.rememberMe.toString()) ? true : false;
-      }
-
+      this.rememberMeSupported = config.get("rememberMe") != null ? true : false;
       this.authenticater = new ShiroAuthenticator(rememberMeSupported);
       this.authorizer = new ShiroAuthorizor();
       this.config = config;
@@ -92,19 +88,43 @@ public class ShiroDescriptor extends Descriptor
 
    private void start(Request request) throws InvocationTargetException
    {
+      SecurityManager currentManager = getSecurityManager(request.getBridge(), request.getApplication().getInjectionContext());
+
       //
-      org.apache.shiro.mgt.SecurityManager currentManager = null;
+      Subject currentUser = null;
+      if(request.getBridge().getSessionValue("currentUser") != null)
+      {
+         currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
+      }
+      else
+      {
+         Subject.Builder builder = new Subject.Builder(currentManager);
+         currentUser = builder.buildSubject();
+         SubjectScoped subjectValue = new SubjectScoped(currentUser);
+         request.getBridge().setSessionValue("currentUser", subjectValue);
+      }
+
+      //
+      ThreadContext.bind(currentUser);
+      ThreadContext.bind(currentManager);
+   }
+
+   private SecurityManager getSecurityManager(RequestBridge bridge, InjectionContext context) throws InvocationTargetException
+   {
+
+      if(bridge.getSessionValue("currentManager") != null)
+      {
+         return (SecurityManager)bridge.getSessionValue("currentManager").get();
+      }
+
+      SecurityManager currentManager = null;
       try
       {
          currentManager = SecurityUtils.getSecurityManager();
       }
       catch (UnavailableSecurityManagerException e1)
       {
-         if(request.getBridge().getSessionValue("currentManager") != null)
-         {
-            currentManager = (DefaultSecurityManager)request.getBridge().getSessionValue("currentManager").get();
-         }
-         else if(shiroIniURL != null)
+         if(shiroIniURL != null)
          {
             Ini ini = new Ini();
             try 
@@ -129,54 +149,48 @@ public class ShiroDescriptor extends Descriptor
          ((DefaultSecurityManager)currentManager).setRememberMeManager(new JuzuRememberMe());
       }
 
-      BeanLifeCycle bean = request.getApplication().getInjectionContext().get(JuzuRealm.class);
-      if(bean != null)
+      if(config.get("realms") != null)
       {
-         if(!(currentManager instanceof RealmSecurityManager))
-         {
-            throw new UnsupportedOperationException("The current security manager unsupported realm");
-         }
-         Realm realm = (Realm)bean.get();
-         Collection<Realm> realms = ((RealmSecurityManager)currentManager).getRealms();
-         if(realms == null)
-         {
-            ((RealmSecurityManager)currentManager).setRealm(realm);
-         }
-         else
-         {
-            boolean notExisted = false;
-            for(Realm sel : realms)
-            {
-               if(sel.getName().equals(realm.getName()))
-               {
-                  notExisted = true;
-                  break;
-               }
-            }
-            if(notExisted) ((RealmSecurityManager)currentManager).getRealms().add(realm);
-         }
+         injectRealms(currentManager, context);
       }
 
       SecurityManagerScoped managerValue = new SecurityManagerScoped(currentManager);
-      request.getBridge().setSessionValue("currentManager", managerValue);
+      bridge.setSessionValue("currentManager", managerValue);
 
-      //
-      Subject currentUser = null;
-      if(request.getBridge().getSessionValue("currentUser") != null)
-      {
-         currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
-      }
-      else
-      {
-         Subject.Builder builder = new Subject.Builder(currentManager);
-         currentUser = builder.buildSubject();
-         SubjectScoped subjectValue = new SubjectScoped(currentUser);
-         request.getBridge().setSessionValue("currentUser", subjectValue);
-      }
+      return currentManager;
+   }
 
-      //
-      ThreadContext.bind(currentUser);
-      ThreadContext.bind(currentManager);
+   private void injectRealms(SecurityManager currentManager, InjectionContext manager) throws InvocationTargetException 
+   {
+      List<String> realmClazz = (List<String>)config.getList("realms");
+
+      Iterable beans = manager.resolveBeans(JuzuRealm.class);
+      for(Object bean : beans)
+      {
+         Object instance = manager.create(bean);
+         JuzuRealm realm = JuzuRealm.class.cast(manager.get(bean, instance));
+         if(realmClazz.contains(realm.getClass().getName()))
+         {
+            Collection<Realm> realms = ((RealmSecurityManager)currentManager).getRealms();
+            if(realms == null)
+            {
+               ((RealmSecurityManager)currentManager).setRealm(realm);
+            }
+            else
+            {
+               boolean notExisted = true;
+               for(Realm sel : realms)
+               {
+                  if(sel.getName().equals(realm.getName()))
+                  {
+                     notExisted = false;
+                     break;
+                  }
+               }
+               if(notExisted) ((RealmSecurityManager)currentManager).getRealms().add(realm);
+            }
+         }
+      }
    }
 
    private void end()
@@ -206,7 +220,7 @@ public class ShiroDescriptor extends Descriptor
          //
          JSON methodsJSON = controllerJSON.getJSON("methods");
          JSON methodJSON = null;
-         
+
          if(controllerJSON.get("require") != null)
          {
             if(authorizer.isAuthorized(request, controllerJSON))
@@ -216,34 +230,34 @@ public class ShiroDescriptor extends Descriptor
                   request.invoke();
                   return;
                }
-               
+
                methodJSON = methodsJSON.getJSON(methodId);
                if(methodJSON == null)
                {
                   request.invoke();
                   return;
                }
-               
+
                doInvoke(request, methodJSON);
                return;
             }
-            
+
             return;
          }
-         
+
          if(methodsJSON == null)
          {
             request.invoke();
             return;
          }
-         
+
          methodJSON = methodsJSON.getJSON(methodId);
          if(methodJSON == null) 
          {
             request.invoke();
             return;
          }
-         
+
          doInvoke(request, methodJSON);
       } 
       finally
@@ -251,7 +265,7 @@ public class ShiroDescriptor extends Descriptor
          end();
       }
    }
-   
+
    private void doInvoke(Request request, JSON json)
    {
       if(authorizer.isAuthorized(request, json))

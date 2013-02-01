@@ -18,8 +18,6 @@
 
 package plugin.shiro.authc.login;
 
-import javax.inject.Inject;
-
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.mgt.DefaultSecurityManager;
@@ -45,9 +43,6 @@ import juzu.template.Template;
  */
 public class A
 {
-   @Inject
-   plugin.shiro.SimpleRealm realm;
-   
    @Action
    @Route("/login")
    @Login(username = "uname", password = "passwd")
