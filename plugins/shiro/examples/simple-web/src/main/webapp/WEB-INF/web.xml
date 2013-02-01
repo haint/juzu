@@ -4,10 +4,10 @@
 <web-app>
   <context-param>
     <param-name>juzu.inject</param-name>
-    <param-value>spring</param-value>
     <!-- 
-    <param-value>guice</param-value>
+    <param-value>spring</param-value>
     -->
+    <param-value>guice</param-value>
   </context-param>
   <servlet>
     <servlet-name>JuzuServlet</servlet-name>

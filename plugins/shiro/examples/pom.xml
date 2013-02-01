@@ -2,22 +2,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-  <packaging>pom</packaging>
-
   <parent>
     <groupId>org.juzu</groupId>
-    <artifactId>juzu-parent</artifactId>
-    <version>0.6.0-beta9</version>
+		<artifactId>plugin-shiro-parent</artifactId>
+		<version>0.6.0-beta14-SNAPSHOT</version>
   </parent>
 
   <groupId>org.juzu</groupId>
-  <artifactId>juzu-samples</artifactId>
-	<version>0.6.0-beta9</version>
+	<artifactId>plugin-shiro-examples-parent</artifactId>
+	<version>0.6.0-beta14-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-	<name>Juzu Samples</name>
+  <name>Juzu Shiro examples parent</name>
+	<description>The Juzu Shiro examples parent</description>
 
-	<modules>
-		<module>shiro</module>
-	</modules>
+  <modules>
+    <module>simple-web</module>
+  </modules>
 
 </project>
