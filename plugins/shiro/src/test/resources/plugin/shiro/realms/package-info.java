@@ -1,0 +1,1 @@
+@juzu.Application @juzu.shiro.Shiro(realms = {plugin.shiro.SimpleRealm.class, plugin.shiro.OtherRealm.class}) package plugin.shiro.realms;

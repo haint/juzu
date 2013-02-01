@@ -15,12 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.sample.shiro.realm;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import juzu.shiro.impl.JuzuRealm;
+package plugin.shiro;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -30,44 +25,45 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.PrincipalCollection;
 
+import juzu.impl.common.Tools;
+import juzu.shiro.impl.JuzuRealm;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class SimpleRealm extends JuzuRealm
+public class OtherRealm extends JuzuRealm
 {
-   private SimpleUserHandle handle = new SimpleUserHandle();
-
    @Override
    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
    {
       String username = (String)getAvailablePrincipal(principals);
-      Set<String> roles = handle.getRoles(username);
-      SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roles);
-      Set<String> permission = new HashSet<String>();
-      for(String role : roles)
+      if("marry".equals(username)) 
       {
-         Set<String> perms = handle.getPermissions(username, role);
-         if(perms != null)
-         {
-            permission.addAll(perms);
-         }
+         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+         info.setRoles(Tools.set("role3"));
+         info.setStringPermissions(Tools.set("permission3"));
+         return info;
       }
-      info.setStringPermissions(permission);
-      return info;
+      return null;
    }
 
    @Override
    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
    {
-      UserInfo user = handle.findUser((String)token.getPrincipal(), new String((char[])token.getCredentials()));
-      return user != null ? new SimpleAuthenticationInfo(token.getPrincipal(), token.getCredentials(), getName()) : null;
+      String principal = (String)token.getPrincipal();
+      String credentials = new String((char[])token.getCredentials());
+      if("marry".equals(principal) && "foo".equals(credentials))
+      {
+         return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
+      }
+      return null;
    }
 
    @Override
    public String getName()
    {
-      return "simple";
+      return "other";
    }
 }

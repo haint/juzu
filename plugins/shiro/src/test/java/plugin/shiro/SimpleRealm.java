@@ -72,4 +72,13 @@ public class SimpleRealm extends JuzuRealm
       }
       return null;
    }
+
+   /**
+    * @see juzu.shiro.impl.JuzuRealm#getName()
+    */
+   @Override
+   public String getName()
+   {
+      return "simple";
+   }
 }

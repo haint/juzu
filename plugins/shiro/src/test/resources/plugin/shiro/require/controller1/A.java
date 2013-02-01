@@ -17,8 +17,6 @@
  */
 package plugin.shiro.require.controller1;
 
-import javax.inject.Inject;
-
 import juzu.Action;
 import juzu.Resource;
 import juzu.Response;
@@ -41,9 +39,6 @@ import plugin.shiro.authz.RequireAtControllerTestCase;
 @RequiresUser
 public class A
 {
-   @Inject
-   plugin.shiro.SimpleRealm realm;
-   
    @View
    @Route("/")
    public Response index(AuthorizationException e) 

@@ -18,8 +18,6 @@
 
 package plugin.shiro.authc.logout;
 
-import javax.inject.Inject;
-
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -47,9 +45,6 @@ import juzu.template.Template;
  */
 public class A
 {
-   @Inject
-   plugin.shiro.SimpleRealm realm;
-   
    @View
    @Route("/")
    public Response index() 

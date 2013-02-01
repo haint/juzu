@@ -17,8 +17,6 @@
  */
 package plugin.shiro.authz;
 
-import javax.inject.Inject;
-
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.annotation.Logical;
@@ -53,9 +51,6 @@ import juzu.template.Template;
  */
 public class A
 {
-   @Inject
-   plugin.shiro.SimpleRealm realm;
-   
    @View @Route("/")
    public Response index() throws Exception 
    {
