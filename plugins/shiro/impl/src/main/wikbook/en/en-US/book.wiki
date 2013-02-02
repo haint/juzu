@@ -116,10 +116,26 @@ public void doLogin(String uname, String pwd, String remember, AuthenticationExc
 {{/java}} 
 
 == Multiple Realms ==
-The plugin provided a ##JuzuRealm## which is wrapper of [[AuthorizingRealm>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/realm/AuthorizingRealm.html]]. Realms was implemented ##JuzuRealm## could be added to the current ##SecurityManager##.
+The plugin provided an easy way to add realm to current ##SecurityManager## by annotation:
 
 {{java}}
-public class SimpleRealm extends JuzuRealm
+
+import org.apache.shiro.realm.AuthorizingRealm;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
+public @interface Realm
+{
+   Class<? extends AuthorizingRealm> value();
+   
+   String name() default "";
+}
+{{/java}} 
+
+**Usage:**
+
+{{java}}
+public class SimpleRealm extends AuthorizingRealm
 {
    @Override
    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
@@ -142,7 +158,7 @@ public class SimpleRealm extends JuzuRealm
 {{/java}}
 
 {{java}}
-public class OtherRealm extends JuzuRealm
+public class OtherRealm extends AuthorizingRealm
 {
    @Override
    public String getName()
@@ -154,21 +170,18 @@ public class OtherRealm extends JuzuRealm
 }
 {{/java}} 
 
-The plugin use realm name and instances of ##JuzuRealm## to identity realm to add the current ##SecurityManager##.
 {{java}}
 @juzu.Application 
-@juzu.shiro.Shiro(realms = {plugin.shiro.SimpleRealm.class, plugin.shiro.OtherRealm.class}) 
-package plugin.shiro.realms;
-{{/java}}
-
-If the application use ##Guice## or ##Spring##, it should use more ##@Bindinds## to bind the reamls
-{{java}}
-@juzu.Application 
-@juzu.shiro.Shiro(realms = {SimpleRealm.class, OtherRealm.class})
-@juzu.plugin.binding.Bindings(value = {@Binding(value = {SimpleRealm.class,OtherRealm.class})
+@juzu.shiro.Shiro(realms = {
+	@Realm(value = SimpleRealm.class, name = "simple"),
+	@Realm(value = OtherRealm.class, name = "other") 
+})
 package plugin.shiro.realms;
 {{/java}}
 
 {{note}}
-The plugin use class qualifier and name of the realms to check they was existed or non-existed. If existed a same realm, the realm (want be added) will be ignored
+If the application use ##Guice## or ##Spring##, it should use more ##@Bindinds## to bind the reamls
+{{java}}
+@juzu.plugin.binding.Bindings(value = {@Binding(value = {SimpleRealm.class,OtherRealm.class})
+{{/java}}
 {{/note}}
