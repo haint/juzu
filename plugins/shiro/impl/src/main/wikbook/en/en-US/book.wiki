@@ -1,0 +1,174 @@
+= Juzu Shiro Plugin =
+
+[[The Apache Shiro>>http://shiro.apache.org]] is a powerful and easy-to-use Java security framework. Therefore, Juzu provides a Shiro plugin that integrates [[Apache Shiro core>>http://shiro.apache.org/core.html]]
+to help Juzu application is easier to perform authentication and authorization. This plugins works both the servlet bridge and portlet bridge. 
+
+**Here is the features supported:**
+
+	* [[Configuration>>http://shiro.apache.org/configuration.html]] [[SecurityManager>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/mgt/SecurityManager.html]]
+	* Authentication
+	* Authorization
+	* Remember Me (Servlet only)
+	* Multiple Realms
+	
+== Configuration ==
+
+If the application is deployed in a system non-existed SecurityManager, then this plugin will initialize a [[DefaultSecurityManager>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/mgt/DefaultSecurityManager.html]] for each applications.
+Otherwise it uses the system SecurityManager provided.
+
+{{java}}
+@juzu.Application
+@juzu.shiro.Shiro
+package org.sample.shiro;
+{{/java}}
+
+Besides the application also can load a [[INI>>http://shiro.apache.org/configuration.html]] file to initialize its SecurityManager.
+
+//For load from CLASSPATH//
+{{java}}
+@juzu.Application 
+@juzu.shiro.Shiro(config = @juzu.shiro.Configuration("/shiro.ini"))
+package org.sample.shiro;
+{{/java}}
+
+//For load from SERVER//
+{{java}}
+@juzu.Application
+@juzu.shiro.Shiro(config = @juzu.shiro.Configuration("/WEB-INF/shiro.ini"), location = juzu.asset.AssetLocation.SERVER)
+package org.sample.shiro;
+{{/java}}
+
+== Authentication ==
+
+This plugin uses ##@juzu.shiro.Login## and ##@juzu.shiro.Logout## to annotate controller methods which perform login or logout operator.
+The ##@juzu.shiro.Login## uses a set of ##username##, ##password##, ##rememberMe## use to specify parameters name was serialized
+
+{{code}}
+<form action="@{Controller.doLogin()} method="POST">
+	Username:<input type="text" name="uname" />
+	Password:<input type="password" name="pwd" />
+	<input type="checkbox" name="remember" />Remember Me
+	<input type="submit" value="Submit" />
+</form>
+{{/code}}
+
+{{java}}	
+@Action
+@Login(username="uname", password="pwd", rememberMe="remember")
+public void doLogin(String uname, String pwd, String remember, AuthenticationException e) 
+{
+....
+}
+{{/java}}  
+
+{{note}}
+The plugin will throw an [[AuthenticationException>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authc/AuthenticationException.html]] and bind into a corresponding ##ContexualParamater## if the controller method handle exception.
+Otherwise the [[AuthenticationException>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authc/AuthenticationException.html]] will encounter while method invoked.
+{{/note}} 
+
+== Authorization ==
+The plugin use [[annotatios>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authz/annotation/package-summary.html]] provide by Apache Shiro to perform authorization. The ##@RequiresGuest##, ##@RequiresUser##, ##@RequiresAuthentication##
+can annotate at controller level. The ##@RequiresRoles## and ##@RequiresPermissions## can annotate only at method level.
+
+{{node}}
+The application encounters ##CompilationException## in phase compile If the ##@RequiresGuest##, ##@RequiresUser##, ##@RequiresAuthentication## annotate duplicate at controller or method 
+{{/node}}
+
+
+{{java}}
+@View
+@RequiresUser @RequiresRoles("foo")
+public void foo(AuthorizationException e)
+{
+....
+}
+{{/java}}
+
+{{note}}
+Same as authentication. The plugin will throw an [[AuthorizationException>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authz/AuthorizationException.html]] if the application is not handled exception by ##ContexualParameter##
+{{/note}}
+
+== Remember Me ==
+
+The plugin forked [[CookieRememberMeManager>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/web/mgt/CookieRememberMeManager.html]] to perform remember subject. Currently, it supports only for Juzu servlet application.
+{{java}}
+@juzu.Application 
+@juzu.shiro.Shiro(rememberMe = true)
+package org.sample.shiro;
+{{/java}}
+
+{{code}}
+<form action="@{Controller.doLogin()} method="POST">
+	Username:<input type="text" name="uname" />
+	Password:<input type="password" name="pwd" />
+	<input type="checkbox" name="remember" />Remember Me
+	<input type="submit" value="Submit" />
+</form>
+{{/code}}
+
+{{java}}	
+@Action
+@Login(username="uname", password="pwd", rememberMe="remember")
+public void doLogin(String uname, String pwd, String remember, AuthenticationException e) 
+{
+....
+}
+{{/java}} 
+
+== Multiple Realms ==
+The plugin provided a ##JuzuRealm## which is wrapper of [[AuthorizingRealm>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/realm/AuthorizingRealm.html]]. Realms was implemented ##JuzuRealm## could be added to the current ##SecurityManager##.
+
+{{java}}
+public class SimpleRealm extends JuzuRealm
+{
+   @Override
+   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
+   {
+     ...
+   }
+   
+   @Override
+   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
+   {
+     ...
+   }
+   
+   @Override
+   public String getName()
+   {
+      return "simple";
+   }
+}
+{{/java}}
+
+{{java}}
+public class OtherRealm extends JuzuRealm
+{
+   @Override
+   public String getName()
+   {
+      return "other";
+   }
+   
+   ...
+}
+{{/java}} 
+
+The plugin use realm name and instances of ##JuzuRealm## to identity realm to add the current ##SecurityManager##.
+{{java}}
+@juzu.Application 
+@juzu.shiro.Shiro(realms = {plugin.shiro.SimpleRealm.class, plugin.shiro.OtherRealm.class}) 
+package plugin.shiro.realms;
+{{/java}}
+
+If the application use ##Guice## or ##Spring##, it should use more ##@Bindinds## to bind the reamls
+{{java}}
+@juzu.Application 
+@juzu.shiro.Shiro(realms = {SimpleRealm.class, OtherRealm.class})
+@juzu.plugin.binding.Bindings(value = {@Binding(value = {SimpleRealm.class,OtherRealm.class})
+package plugin.shiro.realms;
+{{/java}}
+
+{{note}}
+The plugin use class qualifier and name of the realms to check they was existed or non-existed. If existed a same realm, the realm (want be added) will be ignored
+{{/note}}
