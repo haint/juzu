@@ -1,1 +1,3 @@
-@juzu.Application @juzu.shiro.Shiro(realms = {plugin.shiro.SimpleRealm.class}) package plugin.shiro.authz;
+@juzu.Application 
+@juzu.shiro.Shiro(realms = {@juzu.shiro.Realm(value = plugin.shiro.SimpleRealm.class, name = "simple")}) 
+package plugin.shiro.authz;

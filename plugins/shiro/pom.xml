@@ -9,7 +9,7 @@
   </parent>
 
   <groupId>org.juzu</groupId>
-	<artifactId>plugin-shiro-parent</artifactId>
+	<artifactId>juzu-plugins-shiro-parent</artifactId>
 	<version>0.6.0-beta14-SNAPSHOT</version>
   <packaging>pom</packaging>
 

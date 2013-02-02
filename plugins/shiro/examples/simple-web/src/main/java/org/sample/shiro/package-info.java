@@ -6,7 +6,7 @@
       @Stylesheet(src="css/style.css", location=AssetLocation.SERVER)
    }
 )
-@Shiro(rememberMe = true, realms = {org.sample.shiro.realm.SimpleRealm.class})
+@Shiro(rememberMe = true, realms = {@Realm(value = org.sample.shiro.realm.SimpleRealm.class, name = "simple")})
 @Bindings(value = {@Binding(value = org.sample.shiro.realm.SimpleRealm.class)})
 package org.sample.shiro;
 
@@ -16,6 +16,7 @@ import juzu.plugin.asset.Assets;
 import juzu.plugin.asset.Stylesheet;
 import juzu.plugin.portlet.Portlet;
 import juzu.shiro.Shiro;
+import juzu.shiro.Realm;
 import juzu.plugin.binding.Bindings;
 import juzu.plugin.binding.Binding;
 

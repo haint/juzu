@@ -17,23 +17,23 @@
  */
 package plugin.shiro;
 
+import juzu.impl.common.Tools;
+
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-
-import juzu.impl.common.Tools;
-import juzu.shiro.impl.JuzuRealm;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class OtherRealm extends JuzuRealm
+public class OtherRealm extends AuthorizingRealm
 {
    @Override
    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
@@ -59,11 +59,5 @@ public class OtherRealm extends JuzuRealm
          return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
       }
       return null;
-   }
-
-   @Override
-   public String getName()
-   {
-      return "other";
    }
 }

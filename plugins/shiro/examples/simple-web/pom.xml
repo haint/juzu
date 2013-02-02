@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>org.juzu</groupId>
-		<artifactId>juzu-parent</artifactId>
+		<artifactId>juzu-plugins-shiro-examples-parent</artifactId>
 		<version>0.6.0-beta14-SNAPSHOT</version>
 	</parent>
 
@@ -18,9 +18,92 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.juzu</groupId>
-      <artifactId>juzu-bom-core</artifactId>
+      <groupId>javax.portlet</groupId>
+      <artifactId>portlet-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.juzu</groupId>
+      <artifactId>juzu-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.inject</groupId>
+          <artifactId>guice</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld</groupId>
+      <artifactId>weld-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.javassist</groupId>
+      <artifactId>javassist</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-ext</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.cal10n</groupId>
+      <artifactId>cal10n-api</artifactId>
+    </dependency>
+
+		<dependency>
+			<groupId>org.juzu</groupId>
+			<artifactId>juzu-bom-core</artifactId>
+		</dependency>
     <dependency>
       <groupId>org.juzu</groupId>
       <artifactId>juzu-plugins-portlet</artifactId>
@@ -84,7 +167,7 @@
             <groupId>org.juzu</groupId>
             <artifactId>juzu-bom-core</artifactId>
             <version>${project.version}</version>
-          </dependency>
+					</dependency>
         </dependencies>
         <configuration>
           <attach>true</attach>
@@ -97,7 +180,7 @@
             <phase>package</phase>
             <configuration>
               <descriptorRefs>
-                <descriptorRef>tomcat-guice</descriptorRef>
+                <descriptorRef>tomcat</descriptorRef>
                 <descriptorRef>gatein</descriptorRef>
                 <descriptorRef>liferay</descriptorRef>
               </descriptorRefs>

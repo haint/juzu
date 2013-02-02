@@ -90,16 +90,18 @@ public class ShiroMetaModelPlugin extends ApplicationMetaModelPlugin
          JSON json = new JSON();
          json.set("rememberMe", added.get("rememberMe"));
          json.set("config", added.get("config"));
-         List<ElementHandle.Class> realms = (List<juzu.impl.compiler.ElementHandle.Class>)added.get("realms");
+         List<AnnotationState> realms = (List<AnnotationState>)added.get("realms");
+         JSON realmsJSON = new JSON();
          if(realms != null)
          {
-            Set<String> holder = new HashSet<String>();
-            for(ElementHandle.Class clazz : realms)
+            for(AnnotationState sel : realms)
             {
-               holder.add(clazz.getFQN().toString());
+               ElementHandle.Class clazz = (juzu.impl.compiler.ElementHandle.Class)sel.get("value");
+               String name = (String)sel.get("name");
+               realmsJSON.set(clazz.getFQN().toString(), new JSON().set("name", name));
             }
-            json.set("realms", holder);
          }
+         json.set("realms", realmsJSON);
          enableMap.put(handle, json);
       }
       else 

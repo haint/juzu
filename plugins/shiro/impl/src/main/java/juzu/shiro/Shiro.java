@@ -35,5 +35,5 @@ public @interface Shiro
    
    boolean rememberMe() default false;
    
-   Class<?>[] realms()  default {};
+   Realm[] realms()  default {};
 }

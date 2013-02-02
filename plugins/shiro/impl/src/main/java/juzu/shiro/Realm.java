@@ -15,9 +15,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.shiro.impl;
+package juzu.shiro;
 
-import org.apache.shiro.cache.MemoryConstrainedCacheManager;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import org.apache.shiro.realm.AuthorizingRealm;
 
 /**
@@ -25,12 +28,11 @@ import org.apache.shiro.realm.AuthorizingRealm;
  * @version $Id$
  *
  */
-public abstract class JuzuRealm extends AuthorizingRealm 
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
+public @interface Realm
 {
-   public JuzuRealm()
-   {
-      setCacheManager(new MemoryConstrainedCacheManager());
-   }
+   Class<? extends AuthorizingRealm> value();
    
-   public abstract String getName();
+   String name() default "";
 }

@@ -28,7 +28,6 @@ import juzu.impl.inject.spi.InjectionContext;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
-import juzu.shiro.impl.JuzuRealm;
 import juzu.shiro.impl.JuzuRememberMe;
 import juzu.shiro.impl.SecurityManagerScoped;
 import juzu.shiro.impl.ShiroAuthenticator;
@@ -42,6 +41,7 @@ import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -162,15 +162,21 @@ public class ShiroDescriptor extends Descriptor
 
    private void injectRealms(SecurityManager currentManager, InjectionContext manager) throws InvocationTargetException 
    {
-      List<String> realmClazz = (List<String>)config.getList("realms");
+      JSON realmsJSON = config.getJSON("realms");
 
-      Iterable beans = manager.resolveBeans(JuzuRealm.class);
+      Iterable beans = manager.resolveBeans(AuthorizingRealm.class);
       for(Object bean : beans)
       {
          Object instance = manager.create(bean);
-         JuzuRealm realm = JuzuRealm.class.cast(manager.get(bean, instance));
-         if(realmClazz.contains(realm.getClass().getName()))
+         AuthorizingRealm realm = AuthorizingRealm.class.cast(manager.get(bean, instance));
+         JSON realmJSON = realmsJSON.getJSON(realm.getClass().getName()); 
+         if(realmJSON != null)
          {
+            if(realmJSON.get("name") != null)
+            {
+               realm.setName(realmJSON.getString("name"));
+            }
+            
             Collection<Realm> realms = ((RealmSecurityManager)currentManager).getRealms();
             if(realms == null)
             {
@@ -178,16 +184,7 @@ public class ShiroDescriptor extends Descriptor
             }
             else
             {
-               boolean notExisted = true;
-               for(Realm sel : realms)
-               {
-                  if(sel.getName().equals(realm.getName()))
-                  {
-                     notExisted = false;
-                     break;
-                  }
-               }
-               if(notExisted) ((RealmSecurityManager)currentManager).getRealms().add(realm);
+               ((RealmSecurityManager)currentManager).getRealms().add(realm);
             }
          }
       }
