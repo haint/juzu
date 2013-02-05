@@ -26,13 +26,12 @@ import org.apache.shiro.realm.AuthorizingRealm;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
-public @interface Realm
-{
-   Class<? extends AuthorizingRealm> value();
-   
-   String name() default "";
+public @interface Realm {
+  Class<? extends AuthorizingRealm> value();
+
+  String name() default "";
 }

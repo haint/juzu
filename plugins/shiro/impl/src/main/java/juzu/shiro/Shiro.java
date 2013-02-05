@@ -25,15 +25,14 @@ import java.lang.annotation.Target;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PACKAGE)
-public @interface Shiro
-{
-   Configuration config() default @Configuration;
-   
-   boolean rememberMe() default false;
-   
-   Realm[] realms()  default {};
+public @interface Shiro {
+  Configuration config() default @Configuration;
+
+  boolean rememberMe() default false;
+
+  Realm[] realms() default {};
 }

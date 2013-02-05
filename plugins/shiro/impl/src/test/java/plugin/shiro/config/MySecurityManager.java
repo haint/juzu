@@ -22,13 +22,11 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class MySecurityManager extends DefaultSecurityManager
-{
-   public MySecurityManager()
-   {
-      super();
-      setRememberMeManager(new MyRememberMe());
-   }
+public class MySecurityManager extends DefaultSecurityManager {
+  public MySecurityManager() {
+    super();
+    setRememberMeManager(new MyRememberMe());
+  }
 }

@@ -24,25 +24,21 @@ import juzu.impl.inject.Scoped;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class SubjectScoped implements Scoped
-{
-   
-   private Subject subject;
-   
-   public SubjectScoped(Subject subject)
-   {
-      this.subject = subject;
-   }
+public class SubjectScoped implements Scoped {
 
-   public Object get()
-   {
-      return subject;
-   }
+  private Subject subject;
 
-   public void destroy()
-   {
-      subject = null;
-   }
+  public SubjectScoped(Subject subject) {
+    this.subject = subject;
+  }
+
+  public Object get() {
+    return subject;
+  }
+
+  public void destroy() {
+    subject = null;
+  }
 }

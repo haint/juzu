@@ -22,8 +22,7 @@ import juzu.shiro.impl.JuzuRememberMe;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class MyRememberMe extends JuzuRememberMe
-{
+public class MyRememberMe extends JuzuRememberMe {
 }

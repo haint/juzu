@@ -15,51 +15,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.shiro.common;
+package juzu.shiro.impl.common;
 
 import org.apache.shiro.SecurityUtils;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class ShiroTools
-{
+public class ShiroTools {
 
-   /**
-    * Check has roles with OR logical
-    * 
-    * @param roles
-    * @return true even if has one role
-    */
-   public static boolean hasRole(String... roles)
-   {
-      for(String role : roles)
-      {
-         if(SecurityUtils.getSubject().hasRole(role))
-         {
-            return true;
-         }
+  /**
+   * Check has roles with OR logical
+   * 
+   * @param roles
+   * @return true even if has one role
+   */
+  public static boolean hasRole(String... roles) {
+    for (String role : roles) {
+      if (SecurityUtils.getSubject().hasRole(role)) {
+        return true;
       }
-      return false;
-   }
-   
-   /**
-    * Check has permissions with OR logical
-    * 
-    * @param permissions
-    * @return true even if has one permission
-    */
-   public static boolean isPermitted(String... permissions) 
-   {
-      for(String permission : permissions)
-      {
-         if(SecurityUtils.getSubject().isPermitted(permission))
-         {
-            return true;
-         }
+    }
+    return false;
+  }
+
+  /**
+   * Check has permissions with OR logical
+   * 
+   * @param permissions
+   * @return true even if has one permission
+   */
+  public static boolean isPermitted(String... permissions) {
+    for (String permission : permissions) {
+      if (SecurityUtils.getSubject().isPermitted(permission)) {
+        return true;
       }
-      return false;
-   }
+    }
+    return false;
+  }
 }

@@ -33,62 +33,55 @@ import plugin.shiro.SimpleRealm;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class RequireAtControllerTestCase extends AbstractShiroTestCase
-{
-   
-   public static Exception exception;
-   
-   @Deployment(testable = false)
-   public static WebArchive createDeployment()
-   {
-      WebArchive war = createServletDeployment(true, "plugin.shiro.require.controller1");
-      war.addPackage(SimpleRealm.class.getPackage());
-      return war;
-   }
-   
-   @Drone
-   WebDriver driver;
-   
-   @Test
-   @RunAsClient
-   public void test() throws Exception
-   {
-      driver.get(deploymentURL.toString());
-      assertNotNull(exception);
-      assertTrue(exception instanceof AuthorizationException);
-      
-      WebElement view = driver.findElement(By.id("view"));
-      view.click();
-      waitForPresent("Unauthorized");
-      
-      driver.get(deploymentURL.toString());
-      WebElement resource = driver.findElement(By.id("resource"));
-      resource.click();
-      waitForPresent("Unauthorized");
-      
-      driver.get(deploymentURL.toString());
-      WebElement action = driver.findElement(By.id("action"));
-      action.click();
-      waitForPresent("Unauthorized");
-   }
-   
-   private void waitForPresent(String text) throws InterruptedException
-   {
-      for (int second = 0;; second++) {
-         if (second >= 10) fail("timeout");
-         try 
-         {
-            if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*"+ text +"[\\s\\S]*$"))
-            {
-               break;
-            }
-         } 
-         catch (Exception e) 
-         {
-         }
-         Thread.sleep(1000);
+public class RequireAtControllerTestCase extends AbstractShiroTestCase {
+
+  public static Exception exception;
+
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() {
+    WebArchive war = createServletDeployment(true, "plugin.shiro.require.controller1");
+    war.addPackage(SimpleRealm.class.getPackage());
+    return war;
+  }
+
+  @Drone
+  WebDriver driver;
+
+  @Test
+  @RunAsClient
+  public void test() throws Exception {
+    driver.get(deploymentURL.toString());
+    assertNotNull(exception);
+    assertTrue(exception instanceof AuthorizationException);
+
+    WebElement view = driver.findElement(By.id("view"));
+    view.click();
+    waitForPresent("Unauthorized");
+
+    driver.get(deploymentURL.toString());
+    WebElement resource = driver.findElement(By.id("resource"));
+    resource.click();
+    waitForPresent("Unauthorized");
+
+    driver.get(deploymentURL.toString());
+    WebElement action = driver.findElement(By.id("action"));
+    action.click();
+    waitForPresent("Unauthorized");
+  }
+
+  private void waitForPresent(String text) throws InterruptedException {
+    for (int second = 0;; second++) {
+      if (second >= 10)
+        fail("timeout");
+      try {
+        if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*" + text + "[\\s\\S]*$")) {
+          break;
+        }
+      } catch (Exception e) {
       }
-   }
+      Thread.sleep(1000);
+    }
+  }
 }

@@ -23,7 +23,7 @@ import juzu.impl.request.ContextualParameter;
 import juzu.impl.request.Parameter;
 import juzu.impl.request.Request;
 import juzu.shiro.Login;
-import juzu.shiro.common.RememberMeUtil;
+import juzu.shiro.impl.common.RememberMeUtil;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -33,91 +33,72 @@ import org.apache.shiro.subject.Subject;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class ShiroAuthenticator
-{
-   
-   private final boolean rememberMeSupported;
-   
-   public ShiroAuthenticator(boolean rememberMeSupported)
-   {
-      this.rememberMeSupported = rememberMeSupported;
-   }
+public class ShiroAuthenticator {
 
-   public void doLogout(Request request)
-   {
-      SecurityUtils.getSubject().logout();
+  private final boolean rememberMeSupported;
+
+  public ShiroAuthenticator(boolean rememberMeSupported) {
+    this.rememberMeSupported = rememberMeSupported;
+  }
+
+  public void doLogout(Request request) {
+    SecurityUtils.getSubject().logout();
+    request.invoke();
+    if (rememberMeSupported) {
+      RememberMeUtil.forgetIdentity();
+    }
+  }
+
+  public void doLogin(Request request) {
+    Login loginAnnotation = request.getContext().getMethod().getMethod().getAnnotation(Login.class);
+    Subject subject = SecurityUtils.getSubject();
+
+    boolean remember = request.getParameters().get(loginAnnotation.rememberMe()) != null ? true : false;
+    String username = null;
+    String password = null;
+    try {
+      username = request.getParameters().get(loginAnnotation.username())[0];
+      password = request.getParameters().get(loginAnnotation.password())[0];
+    } catch (NullPointerException e) {
+      List<Parameter> parameters = request.getContext().getMethod().getParameters();
+      for (Parameter parameter : parameters) {
+        if (parameter instanceof ContextualParameter) {
+          if (AuthenticationException.class.isAssignableFrom(parameter.getType())) {
+            request.setArgument(parameter, new AuthenticationException(e.getCause()));
+            request.invoke();
+            return;
+          }
+        }
+      }
+    }
+
+    try {
+      subject.login(new UsernamePasswordToken(username, password.toCharArray(), remember));
+
+      //
       request.invoke();
-      if(rememberMeSupported)
-      {
-         RememberMeUtil.forgetIdentity();
+      if (remember && rememberMeSupported) {
+        RememberMeUtil.forgetIdentity();
+        RememberMeUtil.rememberSerialized(request.getResponse());
       }
-   }
-
-   public void doLogin(Request request)
-   {
-      Login loginAnnotation = request.getContext().getMethod().getMethod().getAnnotation(Login.class);
-      Subject subject = SecurityUtils.getSubject();
-
-      boolean remember = request.getParameters().get(loginAnnotation.rememberMe()) != null ? true : false;
-      String username = null;
-      String password = null;
-      try
-      {
-         username = request.getParameters().get(loginAnnotation.username())[0];
-         password = request.getParameters().get(loginAnnotation.password())[0];
-      }
-      catch (NullPointerException e)
-      {
-         List<Parameter> parameters = request.getContext().getMethod().getParameters();
-         for(Parameter parameter : parameters) 
-         {
-            if(parameter instanceof ContextualParameter) 
-            {
-               if(AuthenticationException.class.isAssignableFrom(parameter.getType()))
-               {
-                  request.setArgument(parameter, new AuthenticationException(e.getCause()));
-                  request.invoke();
-                  return;
-               }
+    } catch (AuthenticationException e) {
+      List<Parameter> parameters = request.getContext().getMethod().getParameters();
+      for (Parameter parameter : parameters) {
+        if (parameter instanceof ContextualParameter) {
+          if (AuthenticationException.class.isAssignableFrom(parameter.getType())) {
+            request.setArgument(parameter, e);
+            request.invoke();
+            if (remember) {
+              RememberMeUtil.forgetIdentity();
             }
-         }
+            return;
+          }
+        }
       }
-      
-      try
-      {
-         subject.login(new UsernamePasswordToken(username, password.toCharArray(), remember));
-        
-         //
-         request.invoke();
-         if(remember && rememberMeSupported)
-         {
-            RememberMeUtil.forgetIdentity();
-            RememberMeUtil.rememberSerialized(request.getResponse());
-         }
-      } 
-      catch (AuthenticationException e)
-      {
-         List<Parameter> parameters = request.getContext().getMethod().getParameters();
-         for(Parameter parameter : parameters) 
-         {
-            if(parameter instanceof ContextualParameter) 
-            {
-               if(AuthenticationException.class.isAssignableFrom(parameter.getType())) 
-               {
-                  request.setArgument(parameter, e);
-                  request.invoke();
-                  if(remember)
-                  {
-                     RememberMeUtil.forgetIdentity();
-                  }
-                  return;
-               }
-            }
-         }
-         
-         throw e;
-      }
-   }
+
+      throw e;
+    }
+  }
 }

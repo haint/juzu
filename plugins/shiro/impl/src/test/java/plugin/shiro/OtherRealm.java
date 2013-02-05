@@ -31,33 +31,28 @@ import org.apache.shiro.subject.PrincipalCollection;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class OtherRealm extends AuthorizingRealm
-{
-   @Override
-   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
-   {
-      String username = (String)getAvailablePrincipal(principals);
-      if("marry".equals(username)) 
-      {
-         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-         info.setRoles(Tools.set("role3"));
-         info.setStringPermissions(Tools.set("permission3"));
-         return info;
-      }
-      return null;
-   }
+public class OtherRealm extends AuthorizingRealm {
+  @Override
+  protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+    String username = (String)getAvailablePrincipal(principals);
+    if ("marry".equals(username)) {
+      SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+      info.setRoles(Tools.set("role3"));
+      info.setStringPermissions(Tools.set("permission3"));
+      return info;
+    }
+    return null;
+  }
 
-   @Override
-   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
-   {
-      String principal = (String)token.getPrincipal();
-      String credentials = new String((char[])token.getCredentials());
-      if("marry".equals(principal) && "foo".equals(credentials))
-      {
-         return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
-      }
-      return null;
-   }
+  @Override
+  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+    String principal = (String)token.getPrincipal();
+    String credentials = new String((char[])token.getCredentials());
+    if ("marry".equals(principal) && "foo".equals(credentials)) {
+      return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
+    }
+    return null;
+  }
 }

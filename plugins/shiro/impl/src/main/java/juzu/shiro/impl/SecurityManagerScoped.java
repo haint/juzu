@@ -24,25 +24,21 @@ import org.apache.shiro.mgt.SecurityManager;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class SecurityManagerScoped implements Scoped
-{
-   
-   private SecurityManager manager;
-   
-   public SecurityManagerScoped(SecurityManager manager)
-   {
-      this.manager = manager;
-   }
+public class SecurityManagerScoped implements Scoped {
 
-   public Object get()
-   {
-      return manager;
-   }
+  private SecurityManager manager;
 
-   public void destroy()
-   {
-      manager = null;
-   }
+  public SecurityManagerScoped(SecurityManager manager) {
+    this.manager = manager;
+  }
+
+  public Object get() {
+    return manager;
+  }
+
+  public void destroy() {
+    manager = null;
+  }
 }

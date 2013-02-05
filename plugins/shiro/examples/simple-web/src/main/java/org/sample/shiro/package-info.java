@@ -1,11 +1,7 @@
-@Application(defaultController=org.sample.shiro.Controller.class)
-@Portlet(name="JuzuShiroPortlet")
-
-@Assets(
-   stylesheets = {
-      @Stylesheet(src="css/style.css", location=AssetLocation.SERVER)
-   }
-)
+@Application(defaultController = org.sample.shiro.Controller.class)
+@Portlet(name = "JuzuShiroPortlet")
+@Assets(stylesheets = {@Stylesheet(src = "css/style.css", location = AssetLocation.SERVER)})
+@juzu.plugin.servlet.Servlet(value = "/")
 @Shiro(rememberMe = true, realms = {@Realm(value = org.sample.shiro.realm.SimpleRealm.class, name = "simple")})
 @Bindings(value = {@Binding(value = org.sample.shiro.realm.SimpleRealm.class)})
 package org.sample.shiro;

@@ -33,30 +33,28 @@ import plugin.shiro.SimpleRealm;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class LogoutTestCase extends AbstractShiroTestCase
-{
-   @Drone
-   WebDriver driver;
-   
-   public static Subject currentUser;
-   
-   @Deployment(testable = false)
-   public static WebArchive createDeployment() {
-      WebArchive war = createServletDeployment(true, "plugin.shiro.authc.logout");
-      war.addPackages(true, SimpleRealm.class.getPackage());
-      return war; 
-   }
-   
-   @Test
-   @RunAsClient
-   public void testLogout()
-   {
-      driver.get(deploymentURL.toString());
-      assertEquals("root", currentUser.getPrincipal().toString());
-      WebElement trigger = driver.findElement(By.id("logout"));
-      trigger.click();
-      assertNull(currentUser.getPrincipal());
-   }
+public class LogoutTestCase extends AbstractShiroTestCase {
+  @Drone
+  WebDriver driver;
+
+  public static Subject currentUser;
+
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() {
+    WebArchive war = createServletDeployment(true, "plugin.shiro.authc.logout");
+    war.addPackages(true, SimpleRealm.class.getPackage());
+    return war;
+  }
+
+  @Test
+  @RunAsClient
+  public void testLogout() {
+    driver.get(deploymentURL.toString());
+    assertEquals("root", currentUser.getPrincipal().toString());
+    WebElement trigger = driver.findElement(By.id("logout"));
+    trigger.click();
+    assertNull(currentUser.getPrincipal());
+  }
 }

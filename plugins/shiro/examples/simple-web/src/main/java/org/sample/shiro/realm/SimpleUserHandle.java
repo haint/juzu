@@ -26,50 +26,45 @@ import juzu.impl.common.Tools;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class SimpleUserHandle
-{
-   private Map<String, UserInfo> users = new HashMap<String, UserInfo>();
-   
-   private Map<String, Set<String>> roles = new HashMap<String, Set<String>>();
-   
-   private Map<String, Set<String>> permissions = new HashMap<String, Set<String>>();
-   
-   public SimpleUserHandle()
-   {
-      users.put("root", new UserInfo("root", "secret"));
-      roles.put("root", Tools.set("admin"));
-      
-      users.put("guest", new UserInfo("guest", "guest"));
-      roles.put("guest", Tools.set("guest"));
-      
-      users.put("presidentskroob", new UserInfo("presidentskroob", "12345"));
-      roles.put("presidentskroob", Tools.set("president"));
-      
-      users.put("darkhelmet", new UserInfo("darkhelmet", "ludicrousspeed"));
-      roles.put("darkhelmet", Tools.set("darklord", "schwartz"));
-      
-      users.put("lonestarr", new UserInfo("lonestarr", "vespa"));
-      roles.put("lonestarr", Tools.set("goodguy", "schwartz"));
-      
-      permissions.put("admin", Tools.set("*"));
-      permissions.put("schwartz", Tools.set("lightsaber:*"));
-      permissions.put("goodguy", Tools.set("winnebago:drive:eagle5"));
-   }
+public class SimpleUserHandle {
+  private Map<String, UserInfo> users = new HashMap<String, UserInfo>();
 
-   public UserInfo findUser(String username, String password)
-   {
-      return users.get(username);
-   }
+  private Map<String, Set<String>> roles = new HashMap<String, Set<String>>();
 
-   public Set<String> getRoles(String username)
-   {
-      return roles.get(username);
-   }
+  private Map<String, Set<String>> permissions = new HashMap<String, Set<String>>();
 
-   public Set<String> getPermissions(String username, String role)
-   {
-      return permissions.get(role);
-   }
+  public SimpleUserHandle() {
+    users.put("root", new UserInfo("root", "secret"));
+    roles.put("root", Tools.set("admin"));
+
+    users.put("guest", new UserInfo("guest", "guest"));
+    roles.put("guest", Tools.set("guest"));
+
+    users.put("presidentskroob", new UserInfo("presidentskroob", "12345"));
+    roles.put("presidentskroob", Tools.set("president"));
+
+    users.put("darkhelmet", new UserInfo("darkhelmet", "ludicrousspeed"));
+    roles.put("darkhelmet", Tools.set("darklord", "schwartz"));
+
+    users.put("lonestarr", new UserInfo("lonestarr", "vespa"));
+    roles.put("lonestarr", Tools.set("goodguy", "schwartz"));
+
+    permissions.put("admin", Tools.set("*"));
+    permissions.put("schwartz", Tools.set("lightsaber:*"));
+    permissions.put("goodguy", Tools.set("winnebago:drive:eagle5"));
+  }
+
+  public UserInfo findUser(String username, String password) {
+    return users.get(username);
+  }
+
+  public Set<String> getRoles(String username) {
+    return roles.get(username);
+  }
+
+  public Set<String> getPermissions(String username, String role) {
+    return permissions.get(role);
+  }
 }

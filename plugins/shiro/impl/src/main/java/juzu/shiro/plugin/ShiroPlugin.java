@@ -36,85 +36,72 @@ import juzu.impl.resource.ResourceResolver;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class ShiroPlugin extends ApplicationPlugin implements RequestFilter
-{
-   /** . */
-   private ShiroDescriptor descriptor;
-   
-   /** . */
-   @Inject
-   @Named("juzu.resource_resolver.classpath")
-   ResourceResolver classPathResolver;
-   
-   /** . */
-   @Inject
-   @Named("juzu.resource_resolver.server")
-   ResourceResolver serverResolver;
-   
-   @PostConstruct
-   public void start() throws Exception
-   {
-      JSON config = descriptor.getConfig().getJSON("config");
-      if(config == null) return;
+public class ShiroPlugin extends ApplicationPlugin implements RequestFilter {
+  /** . */
+  private ShiroDescriptor descriptor;
 
-      AssetLocation location = AssetLocation.CLASSPATH;
-      if(config.get("location") != null)
-      {
-         location = AssetLocation.valueOf(config.getString("location"));
+  /** . */
+  @Inject
+  @Named("juzu.resource_resolver.classpath")
+  ResourceResolver classPathResolver;
+
+  /** . */
+  @Inject
+  @Named("juzu.resource_resolver.server")
+  ResourceResolver serverResolver;
+
+  @PostConstruct
+  public void start() throws Exception {
+    JSON config = descriptor.getConfig().getJSON("config");
+    if (config == null)
+      return;
+
+    AssetLocation location = AssetLocation.CLASSPATH;
+    if (config.get("location") != null) {
+      location = AssetLocation.valueOf(config.getString("location"));
+    }
+
+    URL iniURL = null;
+    switch (location) {
+      case CLASSPATH :
+        iniURL = classPathResolver.resolve(config.getString("value"));
+        break;
+      case SERVER :
+        iniURL = serverResolver.resolve(config.getString("value"));
+        break;
+      case URL :
+        iniURL = new URL(config.getString("value"));
+        break;
+      default :
+        break;
+    }
+
+    descriptor.setShiroIniURL(iniURL);
+  }
+
+  public ShiroPlugin() {
+    super("shiro");
+  }
+
+  @Override
+  public Descriptor init(ClassLoader loader, JSON config) throws Exception {
+    if (config != null) {
+      return descriptor = new ShiroDescriptor(config);
+    }
+    return null;
+  }
+
+  public void invoke(Request request) throws ApplicationException {
+    if (descriptor != null) {
+      try {
+        descriptor.invoke(request);
+      } catch (InvocationTargetException e) {
+        throw new RuntimeException(e);
       }
-      
-      URL iniURL = null;
-      switch (location)
-      {
-         case CLASSPATH :
-            iniURL = classPathResolver.resolve(config.getString("value"));
-            break;
-         case SERVER:
-            iniURL = serverResolver.resolve(config.getString("value"));
-            break;
-         case URL:
-            iniURL = new URL(config.getString("value"));
-            break;
-         default :
-            break;
-      }
-      
-      descriptor.setShiroIniURL(iniURL);
-   }
-   
-   public ShiroPlugin()
-   {
-      super("shiro");
-   }
-   
-   @Override
-   public Descriptor init(ClassLoader loader, JSON config) throws Exception 
-   {
-      if(config != null)
-      {
-         return descriptor = new ShiroDescriptor(config);
-      }
-      return null;
-   }
-   
-   public void invoke(Request request) throws ApplicationException
-   {
-      if(descriptor != null) 
-      {
-         try
-         {
-            descriptor.invoke(request);
-         }
-         catch (InvocationTargetException e)
-         {
-            throw new RuntimeException(e);
-         }
-      }
-      else
-      {
-         request.invoke();
-      }
-   }
+    } else {
+      request.invoke();
+    }
+  }
 }

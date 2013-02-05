@@ -25,15 +25,14 @@ import java.lang.annotation.Target;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Login
-{
-   String username() default "username";
-   
-   String password() default "password";
-   
-   String rememberMe() default "rememberMe";
+public @interface Login {
+  String username() default "username";
+
+  String password() default "password";
+
+  String rememberMe() default "rememberMe";
 }

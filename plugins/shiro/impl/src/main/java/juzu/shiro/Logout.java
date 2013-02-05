@@ -25,11 +25,10 @@ import java.lang.annotation.Target;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Logout
-{
+public @interface Logout {
 
 }

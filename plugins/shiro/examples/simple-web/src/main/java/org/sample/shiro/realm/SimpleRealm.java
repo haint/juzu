@@ -33,48 +33,41 @@ import org.apache.shiro.subject.PrincipalCollection;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class SimpleRealm extends AuthorizingRealm
-{
-   private SimpleUserHandle handle = new SimpleUserHandle();
-   
-   public SimpleRealm()
-   {
-      super();
-      setCacheManager(new MemoryConstrainedCacheManager());
-      setCachingEnabled(true);
-   }
+public class SimpleRealm extends AuthorizingRealm {
+  private SimpleUserHandle handle = new SimpleUserHandle();
 
-   @Override
-   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
-   {
-      String username = (String)getAvailablePrincipal(principals);
-      Set<String> roles = handle.getRoles(username);
-      SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roles);
-      Set<String> permission = new HashSet<String>();
-      for(String role : roles)
-      {
-         Set<String> perms = handle.getPermissions(username, role);
-         if(perms != null)
-         {
-            permission.addAll(perms);
-         }
+  public SimpleRealm() {
+    super();
+    setCacheManager(new MemoryConstrainedCacheManager());
+    setCachingEnabled(true);
+  }
+
+  @Override
+  protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+    String username = (String)getAvailablePrincipal(principals);
+    Set<String> roles = handle.getRoles(username);
+    SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roles);
+    Set<String> permission = new HashSet<String>();
+    for (String role : roles) {
+      Set<String> perms = handle.getPermissions(username, role);
+      if (perms != null) {
+        permission.addAll(perms);
       }
-      info.setStringPermissions(permission);
-      return info;
-   }
+    }
+    info.setStringPermissions(permission);
+    return info;
+  }
 
-   @Override
-   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
-   {
-      UserInfo user = handle.findUser((String)token.getPrincipal(), new String((char[])token.getCredentials()));
-      return user != null ? new SimpleAuthenticationInfo(token.getPrincipal(), token.getCredentials(), getName()) : null;
-   }
+  @Override
+  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+    UserInfo user = handle.findUser((String)token.getPrincipal(), new String((char[])token.getCredentials()));
+    return user != null ? new SimpleAuthenticationInfo(token.getPrincipal(), token.getCredentials(), getName()) : null;
+  }
 
-   @Override
-   public String getName()
-   {
-      return "simple";
-   }
+  @Override
+  public String getName() {
+    return "simple";
+  }
 }

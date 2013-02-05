@@ -20,7 +20,6 @@
     <servlet-name>JuzuServlet</servlet-name>
     <url-pattern>/</url-pattern>
   </servlet-mapping>
-  <!-- 
   <servlet>
     <servlet-name>AssetServlet</servlet-name>
     <servlet-class>juzu.impl.asset.AssetServlet</servlet-class>
@@ -30,5 +29,4 @@
     <servlet-name>AssetServlet</servlet-name>
     <url-pattern>/assets/*</url-pattern>
   </servlet-mapping>
-   -->
 </web-app>

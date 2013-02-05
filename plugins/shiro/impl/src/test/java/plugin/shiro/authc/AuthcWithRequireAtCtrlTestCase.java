@@ -37,51 +37,49 @@ import plugin.shiro.SimpleRealm;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class AuthcWithRequireAtCtrlTestCase extends AbstractShiroTestCase
-{
-   /** .*/
-   public static Subject currentUser;
-   
-   /** .*/
-   public static Exception exception;
+public class AuthcWithRequireAtCtrlTestCase extends AbstractShiroTestCase {
+  /** . */
+  public static Subject currentUser;
 
-   @Drone
-   WebDriver driver;
-   
-   @Deployment(testable = false)
-   public static WebArchive createDeployment() {
-      WebArchive war = createServletDeployment(true, "plugin.shiro.require.controller2");
-      war.addPackage(SimpleRealm.class.getPackage());
-      return war;
-   }
-   
-   @Test
-   @RunAsClient
-   public void test() throws Exception
-   {
-      driver.get(deploymentURL.toString());
-      assertNull(exception);
-      
-      WebElement failed = driver.findElement(By.id("failed"));
-      failed.click();
-      assertTrue(exception instanceof AuthenticationException);
-      assertNull(currentUser.getPrincipal());
+  /** . */
+  public static Exception exception;
 
-      driver.get(deploymentURL.toString());
-      WebElement login = driver.findElement(By.id("login"));
-      login.click();
-      assertEquals("root", currentUser.getPrincipal());
-      assertNull(exception);
+  @Drone
+  WebDriver driver;
 
-      driver.get(deploymentURL.toString());
-      assertTrue(exception instanceof AuthorizationException);
-      
-      WebElement logout = driver.findElement(By.id("logout"));
-      logout.click();
-      assertNull(currentUser.getPrincipal());
-      assertTrue(exception instanceof AuthorizationException);
-      
-   }
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() {
+    WebArchive war = createServletDeployment(true, "plugin.shiro.require.controller2");
+    war.addPackage(SimpleRealm.class.getPackage());
+    return war;
+  }
+
+  @Test
+  @RunAsClient
+  public void test() throws Exception {
+    driver.get(deploymentURL.toString());
+    assertNull(exception);
+
+    WebElement failed = driver.findElement(By.id("failed"));
+    failed.click();
+    assertTrue(exception instanceof AuthenticationException);
+    assertNull(currentUser.getPrincipal());
+
+    driver.get(deploymentURL.toString());
+    WebElement login = driver.findElement(By.id("login"));
+    login.click();
+    assertEquals("root", currentUser.getPrincipal());
+    assertNull(exception);
+
+    driver.get(deploymentURL.toString());
+    assertTrue(exception instanceof AuthorizationException);
+
+    WebElement logout = driver.findElement(By.id("logout"));
+    logout.click();
+    assertNull(currentUser.getPrincipal());
+    assertTrue(exception instanceof AuthorizationException);
+
+  }
 }

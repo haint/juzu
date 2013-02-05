@@ -33,76 +33,68 @@ import org.openqa.selenium.WebElement;
 import plugin.shiro.AbstractShiroTestCase;
 import plugin.shiro.SimpleRealm;
 
-
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class LoginTestCase extends AbstractShiroTestCase
-{
-   @Drone
-   WebDriver driver;
-   
-   public static Exception exception;
-   
-   public static DefaultSecurityManager manager;
-   
-   @Deployment(testable = false)
-   public static WebArchive createDeployment() throws IOException {
-      WebArchive war = createServletDeployment(true, "plugin.shiro.authc.login");
-      war.addPackages(true, SimpleRealm.class.getPackage());
-      return war; 
-   }
-   
-   @Test
-   @RunAsClient
-   public void testLoginSuccess() throws Exception
-   {
-      driver.get(deploymentURL.toString());
-      WebElement username = driver.findElement(By.id("uname"));
-      username.sendKeys("root");
-      WebElement password = driver.findElement(By.id("passwd"));
-      password.sendKeys("secret");
-      WebElement submit = driver.findElement(By.id("submit"));
-      submit.click();
-      
-      assertNull(exception);
-      waitForPresent("root logged");
-   }
-   
-   @Test
-   @RunAsClient
-   public void testLoginFailed() throws Exception
-   {
-      driver.get(deploymentURL.toString());
-      WebElement username = driver.findElement(By.id("uname"));
-      username.sendKeys("foo");
-      WebElement password = driver.findElement(By.id("passwd"));
-      password.sendKeys("foo");
-      WebElement submit = driver.findElement(By.id("submit"));
-      submit.click();
-      
-      assertNotNull(exception);
-      assertTrue(exception instanceof AuthenticationException);
-      waitForPresent("failed");
-   }
-   
-   private void waitForPresent(String text) throws InterruptedException
-   {
-      for (int second = 0;; second++) {
-         if (second >= 60) fail("timeout");
-         try 
-         {
-            if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*"+ text +"[\\s\\S]*$"))
-            {
-               break;
-            }
-         } 
-         catch (Exception e) 
-         {
-         }
-         Thread.sleep(1000);
+public class LoginTestCase extends AbstractShiroTestCase {
+  @Drone
+  WebDriver driver;
+
+  public static Exception exception;
+
+  public static DefaultSecurityManager manager;
+
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() throws IOException {
+    WebArchive war = createServletDeployment(true, "plugin.shiro.authc.login");
+    war.addPackages(true, SimpleRealm.class.getPackage());
+    return war;
+  }
+
+  @Test
+  @RunAsClient
+  public void testLoginSuccess() throws Exception {
+    driver.get(deploymentURL.toString());
+    WebElement username = driver.findElement(By.id("uname"));
+    username.sendKeys("root");
+    WebElement password = driver.findElement(By.id("passwd"));
+    password.sendKeys("secret");
+    WebElement submit = driver.findElement(By.id("submit"));
+    submit.click();
+
+    assertNull(exception);
+    waitForPresent("root logged");
+  }
+
+  @Test
+  @RunAsClient
+  public void testLoginFailed() throws Exception {
+    driver.get(deploymentURL.toString());
+    WebElement username = driver.findElement(By.id("uname"));
+    username.sendKeys("foo");
+    WebElement password = driver.findElement(By.id("passwd"));
+    password.sendKeys("foo");
+    WebElement submit = driver.findElement(By.id("submit"));
+    submit.click();
+
+    assertNotNull(exception);
+    assertTrue(exception instanceof AuthenticationException);
+    waitForPresent("failed");
+  }
+
+  private void waitForPresent(String text) throws InterruptedException {
+    for (int second = 0;; second++) {
+      if (second >= 60)
+        fail("timeout");
+      try {
+        if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*" + text + "[\\s\\S]*$")) {
+          break;
+        }
+      } catch (Exception e) {
       }
-   }
+      Thread.sleep(1000);
+    }
+  }
 }

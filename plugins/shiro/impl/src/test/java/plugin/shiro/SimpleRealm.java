@@ -31,45 +31,36 @@ import org.apache.shiro.subject.PrincipalCollection;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class SimpleRealm extends AuthorizingRealm
-{
+public class SimpleRealm extends AuthorizingRealm {
 
-   @Override
-   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
-   {
-      String username = (String)getAvailablePrincipal(principals);
-      if("root".equals(username)) 
-      {
-         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-         info.setRoles(Tools.set("role1", "role2"));
-         info.setStringPermissions(Tools.set("permission1", "permission2"));
-         return info;
-      }
-      else if("john".equals(username))
-      {
-         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-         info.setRoles(Tools.set("role2"));
-         info.setStringPermissions(Tools.set("permission2"));
-         return info;
-      }
-      return null;
-   }
+  @Override
+  protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+    String username = (String)getAvailablePrincipal(principals);
+    if ("root".equals(username)) {
+      SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+      info.setRoles(Tools.set("role1", "role2"));
+      info.setStringPermissions(Tools.set("permission1", "permission2"));
+      return info;
+    } else if ("john".equals(username)) {
+      SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+      info.setRoles(Tools.set("role2"));
+      info.setStringPermissions(Tools.set("permission2"));
+      return info;
+    }
+    return null;
+  }
 
-   @Override
-   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
-   {
-      String principal = (String)token.getPrincipal();
-      String credentials = new String((char[])token.getCredentials());
-      if("root".equals(principal) && "secret".equals(credentials))
-      {
-         return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
-      }
-      else  if("john".equals(principal) && "foo".equals(credentials)) 
-      {
-         return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
-      }
-      return null;
-   }
+  @Override
+  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+    String principal = (String)token.getPrincipal();
+    String credentials = new String((char[])token.getCredentials());
+    if ("root".equals(principal) && "secret".equals(credentials)) {
+      return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
+    } else if ("john".equals(principal) && "foo".equals(credentials)) {
+      return new SimpleAuthenticationInfo(principal, credentials.toCharArray(), getName());
+    }
+    return null;
+  }
 }

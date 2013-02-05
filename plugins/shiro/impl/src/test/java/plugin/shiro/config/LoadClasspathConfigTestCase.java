@@ -29,25 +29,24 @@ import plugin.shiro.AbstractShiroTestCase;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class LoadClasspathConfigTestCase extends AbstractShiroTestCase
-{
-   @Drone
-   WebDriver driver;
-   
-   @Deployment(testable = false)
-   public static WebArchive createDeployment() {
-      return createServletDeployment(true, "plugin.shiro.config.classpath");
-   }
-   
-   @Test
-   @RunAsClient
-   public void test() throws Exception {
-      driver.get(deploymentURL.toString());
-      assertTrue(manager instanceof MySecurityManager);
-      assertTrue(manager.getRememberMeManager() instanceof MyRememberMe);
-      assertEquals(1, manager.getRealms().size());
-      assertTrue(manager.getRealms().iterator().next() instanceof MyRealm);
-   }
+public class LoadClasspathConfigTestCase extends AbstractShiroTestCase {
+  @Drone
+  WebDriver driver;
+
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() {
+    return createServletDeployment(true, "plugin.shiro.config.classpath");
+  }
+
+  @Test
+  @RunAsClient
+  public void test() throws Exception {
+    driver.get(deploymentURL.toString());
+    assertTrue(manager instanceof MySecurityManager);
+    assertTrue(manager.getRememberMeManager() instanceof MyRememberMe);
+    assertEquals(1, manager.getRealms().size());
+    assertTrue(manager.getRealms().iterator().next() instanceof MyRealm);
+  }
 }

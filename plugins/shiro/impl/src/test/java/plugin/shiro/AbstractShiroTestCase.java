@@ -25,15 +25,13 @@ import org.junit.AfterClass;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public abstract class AbstractShiroTestCase extends AbstractWebTestCase
-{
-   public static DefaultSecurityManager manager;
-   
-   @AfterClass
-   public static void destroy()
-   {
-      manager.destroy();
-   }
+public abstract class AbstractShiroTestCase extends AbstractWebTestCase {
+  public static DefaultSecurityManager manager;
+
+  @AfterClass
+  public static void destroy() {
+    manager.destroy();
+  }
 }

@@ -32,52 +32,45 @@ import plugin.shiro.SimpleRealm;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class MultipleRealmsTestCase extends AbstractShiroTestCase
-{
-   @Drone
-   WebDriver driver;
-   
-   @Deployment(testable = false)
-   public static WebArchive createDeployment() {
-      WebArchive war = createServletDeployment(true, "plugin.shiro.realms");
-      war.addPackage(SimpleRealm.class.getPackage());
-      return war;
-   }
-   
-   @Test
-   @RunAsClient
-   public void test() throws InterruptedException 
-   {
-      driver.get(deploymentURL.toString());
-      assertEquals(2, manager.getRealms().size());
-      WebElement john = driver.findElement(By.id("john"));
-      john.click();
-      waitForPresent("can not access");
-      
-      driver.get(deploymentURL.toString());
-      WebElement marry = driver.findElement(By.id("marry"));
-      marry.click();
-      waitForPresent("ok");
-   }
-   
-   private void waitForPresent(String text) throws InterruptedException
-   {
-      for (int second = 0;; second++) {
-         if (second >= 10) fail("timeout");
-         try 
-         {
-            if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*"+ text +"[\\s\\S]*$"))
-            {
-               break;
-            }
-         } 
-         catch (Exception e) 
-         {
-         }
-         Thread.sleep(1000);
-      }
-   }
-}
+public class MultipleRealmsTestCase extends AbstractShiroTestCase {
+  @Drone
+  WebDriver driver;
 
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() {
+    WebArchive war = createServletDeployment(true, "plugin.shiro.realms");
+    war.addPackage(SimpleRealm.class.getPackage());
+    return war;
+  }
+
+  @Test
+  @RunAsClient
+  public void test() throws InterruptedException {
+    driver.get(deploymentURL.toString());
+    assertEquals(2, manager.getRealms().size());
+    WebElement john = driver.findElement(By.id("john"));
+    john.click();
+    waitForPresent("can not access");
+
+    driver.get(deploymentURL.toString());
+    WebElement marry = driver.findElement(By.id("marry"));
+    marry.click();
+    waitForPresent("ok");
+  }
+
+  private void waitForPresent(String text) throws InterruptedException {
+    for (int second = 0;; second++) {
+      if (second >= 10)
+        fail("timeout");
+      try {
+        if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*" + text + "[\\s\\S]*$")) {
+          break;
+        }
+      } catch (Exception e) {
+      }
+      Thread.sleep(1000);
+    }
+  }
+}

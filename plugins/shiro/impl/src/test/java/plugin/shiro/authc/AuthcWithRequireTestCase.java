@@ -33,90 +33,81 @@ import plugin.shiro.SimpleRealm;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class AuthcWithRequireTestCase extends AbstractShiroTestCase
-{
-   @Drone
-   WebDriver driver;
-   
-   public static Exception authcException;
-   
-   public static Exception authzException;
-   
-   @Deployment(testable = false)
-   public static WebArchive createDeployment() {
-      WebArchive war = createServletDeployment(true, "plugin.shiro.authc.require");
-      war.addPackages(true, SimpleRealm.class.getPackage());
-      return war; 
-   }
-   
-   @Test
-   @RunAsClient
-   public void testLogin() throws Exception
-   {
-      //The first login
-      login("root", "secret");
-      waitForPresent("root logged");
+public class AuthcWithRequireTestCase extends AbstractShiroTestCase {
+  @Drone
+  WebDriver driver;
 
-      //The second login
-      login("john", "foo");
-      assertNotNull(authzException);
-      assertTrue(authzException instanceof AuthorizationException);
-      waitForPresent("failed");
-      
-      //
-      logout();
-      login("john", "foo");
-      assertNull(authzException);
-      waitForPresent("john logged");
-      
-      //
-      logout();
-   }
-   
-   @Test
-   @RunAsClient
-   public void testLogout() throws Exception
-   {
-      logout();
-      assertNotNull(authzException);
-      assertTrue(authzException instanceof AuthorizationException);
-   }
-   
-   private void logout()
-   {
-      driver.get(deploymentURL.toString());
-      WebElement trigger = driver.findElement(By.id("logout"));
-      trigger.click();
-   }
-   
-   private void login(String uname, String passwd)
-   {
-      driver.get(deploymentURL.toString());
-      WebElement username = driver.findElement(By.id("uname"));
-      username.sendKeys(uname);
-      WebElement password = driver.findElement(By.id("passwd"));
-      password.sendKeys(passwd);
-      WebElement submit = driver.findElement(By.id("submit"));
-      submit.click();
-   }
-   
-   private void waitForPresent(String text) throws InterruptedException
-   {
-      for (int second = 0;; second++) {
-         if (second >= 60) fail("timeout");
-         try 
-         {
-            if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*"+ text +"[\\s\\S]*$"))
-            {
-               break;
-            }
-         } 
-         catch (Exception e) 
-         {
-         }
-         Thread.sleep(1000);
+  public static Exception authcException;
+
+  public static Exception authzException;
+
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() {
+    WebArchive war = createServletDeployment(true, "plugin.shiro.authc.require");
+    war.addPackages(true, SimpleRealm.class.getPackage());
+    return war;
+  }
+
+  @Test
+  @RunAsClient
+  public void testLogin() throws Exception {
+    // The first login
+    login("root", "secret");
+    waitForPresent("root logged");
+
+    // The second login
+    login("john", "foo");
+    assertNotNull(authzException);
+    assertTrue(authzException instanceof AuthorizationException);
+    waitForPresent("failed");
+
+    //
+    logout();
+    login("john", "foo");
+    assertNull(authzException);
+    waitForPresent("john logged");
+
+    //
+    logout();
+  }
+
+  @Test
+  @RunAsClient
+  public void testLogout() throws Exception {
+    logout();
+    assertNotNull(authzException);
+    assertTrue(authzException instanceof AuthorizationException);
+  }
+
+  private void logout() {
+    driver.get(deploymentURL.toString());
+    WebElement trigger = driver.findElement(By.id("logout"));
+    trigger.click();
+  }
+
+  private void login(String uname, String passwd) {
+    driver.get(deploymentURL.toString());
+    WebElement username = driver.findElement(By.id("uname"));
+    username.sendKeys(uname);
+    WebElement password = driver.findElement(By.id("passwd"));
+    password.sendKeys(passwd);
+    WebElement submit = driver.findElement(By.id("submit"));
+    submit.click();
+  }
+
+  private void waitForPresent(String text) throws InterruptedException {
+    for (int second = 0;; second++) {
+      if (second >= 60)
+        fail("timeout");
+      try {
+        if (driver.findElement(By.cssSelector("BODY")).getText().matches("^[\\s\\S]*" + text + "[\\s\\S]*$")) {
+          break;
+        }
+      } catch (Exception e) {
       }
-   }
+      Thread.sleep(1000);
+    }
+  }
 }

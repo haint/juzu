@@ -26,13 +26,12 @@ import juzu.asset.AssetLocation;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
-public @interface Configuration
-{
-   String value() default "";
-   
-   AssetLocation location() default AssetLocation.CLASSPATH;
+public @interface Configuration {
+  String value() default "";
+
+  AssetLocation location() default AssetLocation.CLASSPATH;
 }

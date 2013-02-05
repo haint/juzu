@@ -28,39 +28,32 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class DuplicateRequireTestCase extends AbstractTestCase
-{
-   @Test
-   public void test1()  throws Exception {
-      CompilerAssert<File, File> compiler = compiler("plugin.shiro.require.duplicate1");
-      try
-      {
-         compiler.assertCompile();
-      }
-      catch (AssertionFailedError e)
-      {
-         e.printStackTrace();
-      }
-   }
-   
-   @Test
-   public void test2() throws Exception {
-      CompilerAssert<File, File> compiler = compiler("plugin.shiro.require.duplicate2");
-      try
-      {
-         compiler.assertCompile();
-      }
-      catch (AssertionFailedError e)
-      {
-         e.printStackTrace();
-      }
-   }
-   
-   @Test
-   public void test3() throws Exception {
-      CompilerAssert<File, File> compiler = compiler("plugin.shiro.require.duplicate3");
+public class DuplicateRequireTestCase extends AbstractTestCase {
+  @Test
+  public void test1() throws Exception {
+    CompilerAssert<File, File> compiler = compiler("plugin.shiro.require.duplicate1");
+    try {
       compiler.assertCompile();
-   }
+    } catch (AssertionFailedError e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test2() throws Exception {
+    CompilerAssert<File, File> compiler = compiler("plugin.shiro.require.duplicate2");
+    try {
+      compiler.assertCompile();
+    } catch (AssertionFailedError e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test3() throws Exception {
+    CompilerAssert<File, File> compiler = compiler("plugin.shiro.require.duplicate3");
+    compiler.assertCompile();
+  }
 }
