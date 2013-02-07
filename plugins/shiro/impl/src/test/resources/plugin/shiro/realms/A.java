@@ -17,6 +17,8 @@
  */
 package plugin.shiro.realms;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
@@ -24,6 +26,7 @@ import juzu.Action;
 import juzu.Response;
 import juzu.Route;
 import juzu.View;
+import juzu.impl.request.Request;
 import juzu.shiro.Login;
 
 import org.apache.shiro.SecurityUtils;
@@ -32,6 +35,8 @@ import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.util.ThreadContext;
 
 import plugin.shiro.realms.MultipleRealmsTestCase;
 
@@ -45,9 +50,9 @@ import com.google.inject.name.Named;
 public class A
 {
    @View @Route("/")
-   public Response index()
+   public Response index() throws InvocationTargetException
    {
-      MultipleRealmsTestCase.manager = (DefaultSecurityManager)SecurityUtils.getSecurityManager();
+      MultipleRealmsTestCase.manager = (DefaultSecurityManager)ThreadContext.getSecurityManager();
       return Response.ok("<a href='" + A_.login("john", "foo") + "' id='john'>john</a><a href='" + A_.login("marry", "foo") + "' id='marry'>marry</a>");
    }
    

@@ -17,7 +17,9 @@
  */
 package juzu.shiro.plugin;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.annotation.PostConstruct;
@@ -32,6 +34,14 @@ import juzu.impl.plugin.application.ApplicationPlugin;
 import juzu.impl.request.Request;
 import juzu.impl.request.RequestFilter;
 import juzu.impl.resource.ResourceResolver;
+import juzu.shiro.impl.SubjectScoped;
+
+import org.apache.shiro.config.ConfigurationException;
+import org.apache.shiro.config.Ini;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -39,8 +49,6 @@ import juzu.impl.resource.ResourceResolver;
  * 
  */
 public class ShiroPlugin extends ApplicationPlugin implements RequestFilter {
-  /** . */
-  private ShiroDescriptor descriptor;
 
   /** . */
   @Inject
@@ -52,34 +60,12 @@ public class ShiroPlugin extends ApplicationPlugin implements RequestFilter {
   @Named("juzu.resource_resolver.server")
   ResourceResolver serverResolver;
 
-  @PostConstruct
-  public void start() throws Exception {
-    JSON config = descriptor.getConfig().getJSON("config");
-    if (config == null)
-      return;
+  /** . */
+  @Inject
+  SecurityManager manager;
 
-    AssetLocation location = AssetLocation.CLASSPATH;
-    if (config.get("location") != null) {
-      location = AssetLocation.valueOf(config.getString("location"));
-    }
-
-    URL iniURL = null;
-    switch (location) {
-      case CLASSPATH :
-        iniURL = classPathResolver.resolve(config.getString("value"));
-        break;
-      case SERVER :
-        iniURL = serverResolver.resolve(config.getString("value"));
-        break;
-      case URL :
-        iniURL = new URL(config.getString("value"));
-        break;
-      default :
-        break;
-    }
-
-    descriptor.setShiroIniURL(iniURL);
-  }
+  /** . */
+  private ShiroDescriptor descriptor;
 
   public ShiroPlugin() {
     super("shiro");
@@ -87,21 +73,75 @@ public class ShiroPlugin extends ApplicationPlugin implements RequestFilter {
 
   @Override
   public Descriptor init(ClassLoader loader, JSON config) throws Exception {
-    if (config != null) {
-      return descriptor = new ShiroDescriptor(config);
+    return config != null ? descriptor = new ShiroDescriptor(config) : null;
+  }
+
+  @PostConstruct
+  public void postConstruct() throws ConfigurationException, IOException {
+    URL iniURL = getShiroIniURL();
+    if (iniURL != null) {
+      Ini ini = new Ini();
+      ini.load(iniURL.openStream());
+      IniSecurityManagerFactory factory = new IniSecurityManagerFactory(ini);
+      manager = factory.getInstance();
     }
-    return null;
   }
 
   public void invoke(Request request) throws ApplicationException {
     if (descriptor != null) {
       try {
+        start();
         descriptor.invoke(request);
       } catch (InvocationTargetException e) {
         throw new RuntimeException(e);
+      } finally {
+        ThreadContext.unbindSubject();
+        ThreadContext.unbindSecurityManager();
       }
     } else {
       request.invoke();
+    }
+  }
+
+  private void start() throws InvocationTargetException {
+    //
+    Request request = Request.getCurrent();
+    Subject currentUser = null;
+
+    if (request.getBridge().getSessionValue("currentUser") != null) {
+      currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
+    } else {
+      Subject.Builder builder = new Subject.Builder(manager);
+      currentUser = builder.buildSubject();
+      SubjectScoped subjectValue = new SubjectScoped(currentUser);
+      request.getBridge().setSessionValue("currentUser", subjectValue);
+    }
+
+    //
+    ThreadContext.bind(manager);
+    ThreadContext.bind(currentUser);
+  }
+
+  private URL getShiroIniURL() throws MalformedURLException {
+    JSON json = descriptor.getConfig().getJSON("config");
+
+    if (json == null)
+      return null;
+
+    AssetLocation location = AssetLocation.CLASSPATH;
+    if (json.get("location") != null) {
+      location = AssetLocation.valueOf(json.getString("location"));
+    }
+
+    switch (location) {
+      case CLASSPATH :
+        return classPathResolver.resolve(json.getString("value"));
+      case SERVER :
+        return serverResolver.resolve(json.getString("value"));
+      case URL :
+        return new URL(json.getString("value"));
+      default :
+        return null;
     }
   }
 }

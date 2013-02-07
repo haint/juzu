@@ -18,33 +18,19 @@
 package juzu.shiro.plugin;
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.List;
+import java.util.Arrays;
 
-import juzu.impl.bridge.spi.RequestBridge;
+import juzu.Scope;
 import juzu.impl.common.JSON;
-import juzu.impl.inject.spi.InjectionContext;
+import juzu.impl.inject.BeanDescriptor;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
-import juzu.shiro.impl.JuzuRememberMe;
-import juzu.shiro.impl.SecurityManagerScoped;
+import juzu.shiro.impl.SecurityManagerProvider;
 import juzu.shiro.impl.ShiroAuthenticator;
 import juzu.shiro.impl.ShiroAuthorizor;
-import juzu.shiro.impl.SubjectScoped;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.UnavailableSecurityManagerException;
-import org.apache.shiro.config.Ini;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.AuthorizingRealm;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -62,167 +48,73 @@ public class ShiroDescriptor extends Descriptor {
   private final JSON config;
 
   /** . */
-  private boolean rememberMeSupported = false;
-
-  /** . */
-  private URL shiroIniURL;
+  private final BeanDescriptor bean;
 
   ShiroDescriptor(JSON config) {
-    this.rememberMeSupported = config.get("rememberMe") != null ? true : false;
-    this.authenticater = new ShiroAuthenticator(rememberMeSupported);
+    this.authenticater = new ShiroAuthenticator(config.get("rememberMe") != null ? true : false);
     this.authorizer = new ShiroAuthorizor();
     this.config = config;
-  }
-
-  public void setShiroIniURL(URL iniURL) {
-    this.shiroIniURL = iniURL;
+    this.bean =
+      BeanDescriptor
+        .createFromProvider(SecurityManager.class, Scope.SESSION, null, new SecurityManagerProvider(config));
   }
 
   public JSON getConfig() {
     return config;
   }
 
-  private void start(Request request) throws InvocationTargetException {
-    SecurityManager currentManager =
-      getSecurityManager(request.getBridge(), request.getApplication().getInjectionContext());
-
-    //
-    Subject currentUser = null;
-    if (request.getBridge().getSessionValue("currentUser") != null) {
-      currentUser = (Subject)request.getBridge().getSessionValue("currentUser").get();
-    } else {
-      Subject.Builder builder = new Subject.Builder(currentManager);
-      currentUser = builder.buildSubject();
-      SubjectScoped subjectValue = new SubjectScoped(currentUser);
-      request.getBridge().setSessionValue("currentUser", subjectValue);
-    }
-
-    //
-    ThreadContext.bind(currentUser);
-    ThreadContext.bind(currentManager);
-  }
-
-  private SecurityManager getSecurityManager(RequestBridge bridge, InjectionContext context)
-    throws InvocationTargetException {
-
-    if (bridge.getSessionValue("currentManager") != null) {
-      return (SecurityManager)bridge.getSessionValue("currentManager").get();
-    }
-
-    SecurityManager currentManager = null;
-    try {
-      currentManager = SecurityUtils.getSecurityManager();
-    } catch (UnavailableSecurityManagerException e1) {
-      if (shiroIniURL != null) {
-        Ini ini = new Ini();
-        try {
-          ini.load(shiroIniURL.openStream());
-          IniSecurityManagerFactory factory = new IniSecurityManagerFactory(ini);
-          currentManager = factory.getInstance();
-        } catch (Exception e2) {
-          throw new ApplicationException(e2);
-        }
-      } else {
-        currentManager = new DefaultSecurityManager();
-      }
-    }
-
-    if (rememberMeSupported && currentManager instanceof DefaultSecurityManager) {
-      ((DefaultSecurityManager)currentManager).setRememberMeManager(new JuzuRememberMe());
-    }
-
-    if (config.get("realms") != null) {
-      injectRealms(currentManager, context);
-    }
-
-    SecurityManagerScoped managerValue = new SecurityManagerScoped(currentManager);
-    bridge.setSessionValue("currentManager", managerValue);
-
-    return currentManager;
-  }
-
-  private void injectRealms(SecurityManager currentManager, InjectionContext manager) throws InvocationTargetException {
-    JSON realmsJSON = config.getJSON("realms");
-
-    Iterable beans = manager.resolveBeans(AuthorizingRealm.class);
-    for (Object bean : beans) {
-      Object instance = manager.create(bean);
-      AuthorizingRealm realm = AuthorizingRealm.class.cast(manager.get(bean, instance));
-      JSON realmJSON = realmsJSON.getJSON(realm.getClass().getName());
-      if (realmJSON != null) {
-        if (realmJSON.get("name") != null) {
-          realm.setName(realmJSON.getString("name"));
-        }
-
-        Collection<Realm> realms = ((RealmSecurityManager)currentManager).getRealms();
-        if (realms == null) {
-          ((RealmSecurityManager)currentManager).setRealm(realm);
-        } else {
-          ((RealmSecurityManager)currentManager).getRealms().add(realm);
-        }
-      }
-    }
-  }
-
-  private void end() {
-    ThreadContext.unbindSubject();
-    ThreadContext.unbindSecurityManager();
+  @Override
+  public Iterable<BeanDescriptor> getBeans() {
+    return Arrays.asList(bean);
   }
 
   public void invoke(Request request) throws ApplicationException, InvocationTargetException {
-    try {
-      //
-      start(request);
+    //
+    String methodId = request.getContext().getMethod().getHandle().toString();
+    String controllerId = methodId.substring(0, methodId.indexOf('#'));
+    methodId = methodId.substring(controllerId.length() + 1);
+    JSON controllerJSON = config.getJSON(controllerId);
+    if (controllerJSON == null) {
+      request.invoke();
+      return;
+    }
 
-      //
-      String methodId = request.getContext().getMethod().getHandle().toString();
-      String controllerId = methodId.substring(0, methodId.indexOf('#'));
-      methodId = methodId.substring(controllerId.length() + 1);
-      JSON controllerJSON = config.getJSON(controllerId);
-      if (controllerJSON == null) {
-        request.invoke();
-        return;
-      }
+    //
+    JSON methodsJSON = controllerJSON.getJSON("methods");
+    JSON methodJSON = null;
 
-      //
-      JSON methodsJSON = controllerJSON.getJSON("methods");
-      JSON methodJSON = null;
-
-      if (controllerJSON.get("require") != null) {
-        if (authorizer.isAuthorized(request, controllerJSON)) {
-          if (methodsJSON == null) {
-            request.invoke();
-            return;
-          }
-
-          methodJSON = methodsJSON.getJSON(methodId);
-          if (methodJSON == null) {
-            request.invoke();
-            return;
-          }
-
-          doInvoke(request, methodJSON);
+    if (controllerJSON.get("require") != null) {
+      if (authorizer.isAuthorized(request, controllerJSON)) {
+        if (methodsJSON == null) {
+          request.invoke();
           return;
         }
 
+        methodJSON = methodsJSON.getJSON(methodId);
+        if (methodJSON == null) {
+          request.invoke();
+          return;
+        }
+
+        doInvoke(request, methodJSON);
         return;
       }
 
-      if (methodsJSON == null) {
-        request.invoke();
-        return;
-      }
-
-      methodJSON = methodsJSON.getJSON(methodId);
-      if (methodJSON == null) {
-        request.invoke();
-        return;
-      }
-
-      doInvoke(request, methodJSON);
-    } finally {
-      end();
+      return;
     }
+
+    if (methodsJSON == null) {
+      request.invoke();
+      return;
+    }
+
+    methodJSON = methodsJSON.getJSON(methodId);
+    if (methodJSON == null) {
+      request.invoke();
+      return;
+    }
+
+    doInvoke(request, methodJSON);
   }
 
   private void doInvoke(Request request, JSON json) {
