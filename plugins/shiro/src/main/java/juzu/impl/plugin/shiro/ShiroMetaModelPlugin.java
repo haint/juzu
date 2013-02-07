@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.shiro.plugin;
+package juzu.impl.plugin.shiro;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,9 +35,9 @@ import juzu.impl.plugin.application.metamodel.ApplicationMetaModelPlugin;
 import juzu.impl.plugin.controller.metamodel.ControllerMetaModel;
 import juzu.impl.plugin.controller.metamodel.ControllersMetaModel;
 import juzu.impl.plugin.controller.metamodel.MethodMetaModel;
-import juzu.shiro.Login;
-import juzu.shiro.Logout;
-import juzu.shiro.Shiro;
+import juzu.plugin.shiro.Login;
+import juzu.plugin.shiro.Logout;
+import juzu.plugin.shiro.Shiro;
 
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;

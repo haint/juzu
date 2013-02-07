@@ -20,8 +20,7 @@ package plugin.shiro.require.controller2;
 import juzu.Response;
 import juzu.Route;
 import juzu.View;
-import juzu.shiro.Login;
-import juzu.shiro.Logout;
+import juzu.plugin.shiro.*;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;

@@ -18,7 +18,7 @@ Otherwise it uses the system SecurityManager provided.
 
 {{java}}
 @juzu.Application
-@juzu.shiro.Shiro
+@juzu.plugin.shiro.Shiro
 package org.sample.shiro;
 {{/java}}
 
@@ -27,21 +27,21 @@ Besides the application also can load a [[INI>>http://shiro.apache.org/configura
 //For load from CLASSPATH//
 {{java}}
 @juzu.Application 
-@juzu.shiro.Shiro(config = @juzu.shiro.Configuration("/shiro.ini"))
+@juzu.plugin.shiro.Shiro(config = @juzu.plugin.shiro.Configuration("/shiro.ini"))
 package org.sample.shiro;
 {{/java}}
 
 //For load from SERVER//
 {{java}}
 @juzu.Application
-@juzu.shiro.Shiro(config = @juzu.shiro.Configuration("/WEB-INF/shiro.ini"), location = juzu.asset.AssetLocation.SERVER)
+@juzu.plugin.shiro.Shiro(config = @juzu.plugin.shiro.Configuration("/WEB-INF/shiro.ini"), location = juzu.asset.AssetLocation.SERVER)
 package org.sample.shiro;
 {{/java}}
 
 == Authentication ==
 
-This plugin uses ##@juzu.shiro.Login## and ##@juzu.shiro.Logout## to annotate controller methods which perform login or logout operator.
-The ##@juzu.shiro.Login## uses a set of ##username##, ##password##, ##rememberMe## use to specify parameters name was serialized
+This plugin uses ##@juzu.plugin.shiro.Login## and ##@juzu.plugin.shiro.Logout## to annotate controller methods which perform login or logout operator.
+The ##@juzu.plugin.shiro.Login## uses a set of ##username##, ##password##, ##rememberMe## use to specify parameters name was serialized
 
 {{code}}
 <form action="@{Controller.doLogin()} method="POST">
@@ -93,7 +93,7 @@ Same as authentication. The plugin will throw an [[AuthorizationException>>http:
 The plugin forked [[CookieRememberMeManager>>http://shiro.apache.org/static/current/apidocs/org/apache/shiro/web/mgt/CookieRememberMeManager.html]] to perform remember subject. Currently, it supports only for Juzu servlet application.
 {{java}}
 @juzu.Application 
-@juzu.shiro.Shiro(rememberMe = true)
+@juzu.plugin.shiro.Shiro(rememberMe = true)
 package org.sample.shiro;
 {{/java}}
 
@@ -172,7 +172,7 @@ public class OtherRealm extends AuthorizingRealm
 
 {{java}}
 @juzu.Application 
-@juzu.shiro.Shiro(realms = {
+@juzu.plugin.shiro.Shiro(realms = {
 	@Realm(value = SimpleRealm.class, name = "simple"),
 	@Realm(value = OtherRealm.class, name = "other") 
 })

@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.shiro.plugin;
+package juzu.impl.plugin.shiro;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -26,9 +26,9 @@ import juzu.impl.inject.BeanDescriptor;
 import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
-import juzu.shiro.impl.SecurityManagerProvider;
-import juzu.shiro.impl.ShiroAuthenticator;
-import juzu.shiro.impl.ShiroAuthorizor;
+import juzu.plugin.shiro.impl.SecurityManagerProvider;
+import juzu.plugin.shiro.impl.ShiroAuthenticator;
+import juzu.plugin.shiro.impl.ShiroAuthorizor;
 
 import org.apache.shiro.mgt.SecurityManager;
 

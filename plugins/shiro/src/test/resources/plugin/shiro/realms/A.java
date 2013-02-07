@@ -27,7 +27,7 @@ import juzu.Response;
 import juzu.Route;
 import juzu.View;
 import juzu.impl.request.Request;
-import juzu.shiro.Login;
+import juzu.plugin.shiro.*;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;

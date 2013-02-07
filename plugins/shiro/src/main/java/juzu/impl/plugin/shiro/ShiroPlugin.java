@@ -15,7 +15,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.shiro.plugin;
+package juzu.impl.plugin.shiro;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -34,7 +34,7 @@ import juzu.impl.plugin.application.ApplicationPlugin;
 import juzu.impl.request.Request;
 import juzu.impl.request.RequestFilter;
 import juzu.impl.resource.ResourceResolver;
-import juzu.shiro.impl.SubjectScoped;
+import juzu.plugin.shiro.impl.SubjectScoped;
 
 import org.apache.shiro.config.ConfigurationException;
 import org.apache.shiro.config.Ini;

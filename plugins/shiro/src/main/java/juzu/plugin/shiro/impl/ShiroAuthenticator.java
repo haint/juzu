@@ -15,15 +15,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.shiro.impl;
+package juzu.plugin.shiro.impl;
 
 import java.util.List;
 
 import juzu.impl.request.ContextualParameter;
 import juzu.impl.request.Parameter;
 import juzu.impl.request.Request;
-import juzu.shiro.Login;
-import juzu.shiro.impl.common.RememberMeUtil;
+import juzu.plugin.shiro.Login;
+import juzu.plugin.shiro.impl.common.RememberMeUtil;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
