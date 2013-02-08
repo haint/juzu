@@ -18,9 +18,10 @@
  */
 
 @Application(defaultController = org.sample.booking.controllers.Application.class)
-@Bindings({@Binding(Flash.class), @Binding(Login.class)})
+@Bindings({@Binding(Flash.class), @Binding(Login.class), @Binding(BookingRealm.class)})
 @Portlet
 @Servlet("/")
+@Shiro(realms = {@Realm(value = BookingRealm.class, name = "booking")}, rememberMe = true)
 @Assets(
     scripts = {
         @Script(id = "jquery", src = "public/javascripts/jquery-1.7.1.min.js"),
@@ -43,4 +44,5 @@ import juzu.plugin.binding.Binding;
 import juzu.plugin.binding.Bindings;
 import juzu.plugin.portlet.Portlet;
 import juzu.plugin.servlet.Servlet;
+import juzu.plugin.shiro.*;
 import org.sample.booking.controllers.Login;

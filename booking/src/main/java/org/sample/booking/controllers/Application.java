@@ -19,16 +19,22 @@
 
 package org.sample.booking.controllers;
 
+import javax.inject.Inject;
+
 import juzu.Action;
 import juzu.Path;
 import juzu.Response;
 import juzu.Route;
 import juzu.View;
+import juzu.plugin.shiro.Logout;
 import juzu.template.Template;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
 import org.sample.booking.Flash;
 import org.sample.booking.models.User;
-
-import javax.inject.Inject;
 
 /** @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a> */
 public class Application {
@@ -76,10 +82,10 @@ public class Application {
   @View
   @Route("/")
   public void index() {
+    login.setUserName((String)SecurityUtils.getSubject().getPrincipal());
     if (login.isConnected()) {
       hotels.index();
-    }
-    else {
+    } else {
       index.render();
     }
   }
@@ -101,6 +107,9 @@ public class Application {
        }
 */
     User.create(user);
+    Subject subject = SecurityUtils.getSubject();
+    subject.login(new UsernamePasswordToken(user.username, user.password.toCharArray()));
+    
     login.setUserName(user.username);
     flash.setSuccess("Welcome, " + user.name);
     return Application_.index();
@@ -108,25 +117,24 @@ public class Application {
 
 
   @Action
-  @Route("/login")
-  public Response login(User u) {
+  @Route("/login") @juzu.plugin.shiro.Login
+  public Response login(User u, AuthenticationException e) {
     System.out.println("Want login " + u.username + " " + u.password);
-    User user = User.find(u.username, u.password);
-    if (user != null) {
-      login.setUserName(user.username);
-      flash.setSuccess("Welcome, " + user.name);
+    if (e == null) {
+      login.setUserName(u.username);
+      flash.setSuccess("Welcome, " + u.name);
       return Application_.index();
     }
     else {
       // Oops
       flash.setUsername(u.username);
       flash.setError("Login failed");
-      return null;
+      return Application_.index();
     }
   }
 
   @Action
-  @Route("/logout")
+  @Route("/logout") @Logout
   public Response logout() {
     login.setUserName(null);
     return Application_.index();

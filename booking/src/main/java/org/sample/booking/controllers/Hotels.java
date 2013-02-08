@@ -27,6 +27,8 @@ import juzu.Response;
 import juzu.Route;
 import juzu.View;
 import juzu.plugin.ajax.Ajax;
+
+import org.apache.shiro.authz.annotation.RequiresUser;
 import org.sample.booking.Flash;
 import org.sample.booking.models.Booking;
 import org.sample.booking.models.Hotel;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /** @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a> */
+@RequiresUser
 public class Hotels // extends Application
 {
 
