@@ -17,14 +17,12 @@
  */
 package juzu.impl.plugin.shiro;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 import juzu.Scope;
 import juzu.impl.common.JSON;
 import juzu.impl.inject.BeanDescriptor;
 import juzu.impl.metadata.Descriptor;
-import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
 import juzu.plugin.shiro.impl.SecurityManagerProvider;
 import juzu.plugin.shiro.impl.ShiroAuthenticator;
@@ -68,7 +66,7 @@ public class ShiroDescriptor extends Descriptor {
     return Arrays.asList(bean);
   }
 
-  public void invoke(Request request) throws ApplicationException, InvocationTargetException {
+  public void invoke(Request request) {
     //
     String methodId = request.getContext().getMethod().getHandle().toString();
     String controllerId = methodId.substring(0, methodId.indexOf('#'));

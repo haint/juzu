@@ -50,7 +50,7 @@ public class LogoutTestCase extends AbstractShiroTestCase {
 
   @Test
   @RunAsClient
-  public void testLogout() {
+  public void testLogout() throws Exception {
     driver.get(deploymentURL.toString());
     assertEquals("root", currentUser.getPrincipal().toString());
     WebElement trigger = driver.findElement(By.id("logout"));

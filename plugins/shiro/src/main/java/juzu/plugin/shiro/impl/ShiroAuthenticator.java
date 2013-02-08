@@ -19,6 +19,7 @@ package juzu.plugin.shiro.impl;
 
 import java.util.List;
 
+import juzu.Response;
 import juzu.impl.request.ContextualParameter;
 import juzu.impl.request.Parameter;
 import juzu.impl.request.Request;
@@ -72,6 +73,10 @@ public class ShiroAuthenticator {
           }
         }
       }
+      
+      request.getContext().setResponse(Response.error(e));
+      request.invoke();
+      return;
     }
 
     try {
@@ -98,7 +103,8 @@ public class ShiroAuthenticator {
         }
       }
 
-      throw e;
+      request.getContext().setResponse(new Response.Error(e));
+      request.invoke();
     }
   }
 }

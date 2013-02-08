@@ -8,12 +8,12 @@
   <parent>
     <groupId>org.juzu</groupId>
     <artifactId>juzu-plugins-parent</artifactId>
-    <version>0.6.0-beta14-SNAPSHOT</version>
+    <version>0.6.0-beta17-SNAPSHOT</version>
   </parent>
 
   <groupId>org.juzu</groupId>
   <artifactId>juzu-plugins-shiro</artifactId>
-  <version>0.6.0-beta14-SNAPSHOT</version>
+  <version>0.6.0-beta17-SNAPSHOT</version>
 
   <name>Juzu Shiro Plugin</name>
   <description>The Shiro plugin</description>

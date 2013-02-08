@@ -139,11 +139,14 @@ public class A
    }
    
    @Action @Route("/login") @Login
-   public void login(String username, String password, AuthenticationException e)
+   public Response login(String username, String password, AuthenticationException e)
    {
-      if(e != null) throw e;
+      if(e != null) return Response.error(e);
+      return A_.index();
    }
    
    @Action @Route("/logout") @Logout
-   public void logout() {}
+   public Response logout() {
+     return A_.index();
+   }
 }

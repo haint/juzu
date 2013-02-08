@@ -61,8 +61,14 @@ public class A
    @Action
    @Route("/logout")
    @Logout
-   public void logout()
+   public Response logout()
    {
       LogoutTestCase.currentUser = SecurityUtils.getSubject();
+      return A_.afterLogout();
+   }
+   
+   @View @Route("/afterLogout")
+   public Response afterLogout() {
+     return Response.ok("ok");
    }
 }

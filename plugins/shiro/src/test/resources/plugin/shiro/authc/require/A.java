@@ -60,9 +60,10 @@ public class A
    @Action
    @Route("/logout")
    @Logout @RequiresUser
-   public void logout(AuthorizationException e)
+   public Response logout(AuthorizationException e)
    {
       AuthcWithRequireTestCase.authzException = e;
+      return A_.index();
    }
 
    @View @Route("/index")

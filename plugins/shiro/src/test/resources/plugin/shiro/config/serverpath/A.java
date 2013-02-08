@@ -17,6 +17,7 @@
  */
 package plugin.shiro.config.serverpath;
 
+import juzu.Response;
 import juzu.Route;
 import juzu.View;
 
@@ -34,7 +35,8 @@ public class A
 {
    @View
    @Route("/")
-   public void index() {
+   public Response index() {
       AbstractShiroTestCase.manager = (DefaultSecurityManager)ThreadContext.getSecurityManager();
+      return Response.ok("ok");
    }
 }

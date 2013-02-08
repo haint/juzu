@@ -24,7 +24,6 @@ import javax.inject.Provider;
 
 import juzu.impl.common.JSON;
 import juzu.impl.inject.spi.InjectionContext;
-import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.request.Request;
 
 import org.apache.shiro.SecurityUtils;
@@ -65,7 +64,7 @@ public class SecurityManagerProvider implements Provider<SecurityManager> {
       try {
         injectRealms(config, manager, Request.getCurrent().getApplication().getInjectionContext());
       } catch (InvocationTargetException e) {
-        throw new ApplicationException(e);
+        throw new RuntimeException(e);
       }
     }
 

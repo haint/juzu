@@ -19,6 +19,7 @@ package juzu.plugin.shiro.impl;
 
 import java.util.List;
 
+import juzu.Response;
 import juzu.impl.common.JSON;
 import juzu.impl.request.ContextualParameter;
 import juzu.impl.request.Parameter;
@@ -43,7 +44,7 @@ public class ShiroAuthorizor {
       for (Parameter parameter : parameters) {
         if (parameter instanceof ContextualParameter) {
           if (AuthorizationException.class.isAssignableFrom(parameter.getType())) {
-            request.setArgument(parameter, new AuthorizationException("Can not access "
+            request.setArgument(parameter, new AuthorizationException("Access denied "
               + request.getContext().getMethod() + " with config " + json));
             request.invoke();
             return false;
@@ -51,7 +52,9 @@ public class ShiroAuthorizor {
         }
       }
 
-      throw new AuthorizationException("Can not access " + request.getContext().getMethod() + " with config " + json);
+      request.getContext().setResponse(new Response.Error(new AuthorizationException("Access denied " + request.getContext().getMethod() + " with config " + json)));
+      request.invoke();
+      return false;
     }
   }
 

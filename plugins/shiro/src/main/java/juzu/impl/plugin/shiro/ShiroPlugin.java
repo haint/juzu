@@ -29,7 +29,6 @@ import javax.inject.Named;
 import juzu.asset.AssetLocation;
 import juzu.impl.common.JSON;
 import juzu.impl.metadata.Descriptor;
-import juzu.impl.plugin.application.ApplicationException;
 import juzu.impl.plugin.application.ApplicationPlugin;
 import juzu.impl.request.Request;
 import juzu.impl.request.RequestFilter;
@@ -87,7 +86,7 @@ public class ShiroPlugin extends ApplicationPlugin implements RequestFilter {
     }
   }
 
-  public void invoke(Request request) throws ApplicationException {
+  public void invoke(Request request) {
     if (descriptor != null) {
       try {
         start();

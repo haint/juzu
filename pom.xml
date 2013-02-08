@@ -187,13 +187,13 @@
       <dependency>
         <groupId>org.juzu</groupId>
         <artifactId>juzu-plugins-shiro</artifactId>
-        <version>0.6.0-beta14-SNAPSHOT</version>
+        <version>0.6.0-beta17-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.juzu</groupId>
         <artifactId>juzu-plugins-shiro</artifactId>
         <classifier>sources</classifier>
-        <version>0.6.0-beta14-SNAPSHOT</version>
+        <version>0.6.0-beta17-SNAPSHOT</version>
       </dependency>
 
       <dependency>

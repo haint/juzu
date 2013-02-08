@@ -17,6 +17,7 @@
  */
 package plugin.shiro.require.controller2;
 
+import juzu.Action;
 import juzu.Response;
 import juzu.Route;
 import juzu.View;
@@ -51,18 +52,25 @@ public class A
          "<a href='" + A_.logout() + "' id='logout'>logout</a>");
    }
    
-   @View @Route("/login") @Login
-   public void login(String username, String password, AuthenticationException e)
+   @Action @Route("/login") @Login
+   public Response login(String username, String password, AuthenticationException e)
    {
       AuthcWithRequireAtCtrlTestCase.exception = e;
       AuthcWithRequireAtCtrlTestCase.currentUser = SecurityUtils.getSubject();
+      return A_.foo();
    }
    
-   @View @Route("/logout") @Logout
-   public void logout(AuthorizationException e)
+   @View @Route("/foo")
+   public Response foo() {
+     return Response.ok("foo");
+   }
+   
+   @Action @Route("/logout") @Logout
+   public Response logout(AuthorizationException e)
    {
       SecurityUtils.getSubject().logout();
       AuthcWithRequireAtCtrlTestCase.exception = e;
       AuthcWithRequireAtCtrlTestCase.currentUser = SecurityUtils.getSubject();
+      return A_.foo();
    }
 }
