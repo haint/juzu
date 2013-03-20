@@ -57,6 +57,26 @@ public class AbstractITCase {
     return war;
   }
   
+  protected static WebArchive createPortletDeployment(String injector) throws Exception {
+    WebArchive war =
+          ShrinkWrap.create(ZipImporter.class, injector + ".war").importFrom(new File("target/assembly-gatein.war"))
+          .as(WebArchive.class);
+
+    war.addAsLibraries(
+      new File(Portlet.class.getProtectionDomain().getCodeSource().getLocation().toURI()),
+      new File(Servlet.class.getProtectionDomain().getCodeSource().getLocation().toURI()),
+      new File(EmbedServlet.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
+    
+    String servlet = Tools.read(Thread.currentThread().getContextClassLoader().getResource("portlet/web.xml"));
+    servlet = String.format(servlet, injector);
+    war.setWebXML(new StringAsset(servlet));
+    
+    war.addAsWebInfResource(Thread.currentThread().getContextClassLoader().getResource("portlet/portlet.xml"), "portlet.xml");
+    
+    addResources(new File(RESOURCE_PATH + "/juzu"), war);
+    return war;
+  }
+  
   protected static WebArchive createServletDeployment(String injector) throws Exception {
     WebArchive war = createBaseDeployment(injector);
     String servlet = Tools.read(Thread.currentThread().getContextClassLoader().getResource("servlet/web.xml"));

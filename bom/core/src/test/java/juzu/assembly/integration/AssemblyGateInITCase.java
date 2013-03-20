@@ -36,24 +36,24 @@ import org.openqa.selenium.WebDriver;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- * 
+ *
  */
 @RunWith(Arquillian.class)
-public class AssemblyITCase extends AbstractITCase {
-
+public class AssemblyGateInITCase extends AbstractITCase{
+ 
   @Deployment(testable = false, name = "spring", order = 1)
-  public static WebArchive createServletSpring() throws Exception {
-    return createServletDeployment("spring");
+  public static WebArchive createPortletSpring() throws Exception {
+    return createPortletDeployment("spring");
   }
   
   @Deployment(testable = false, name = "guice", order = 2)
-  public static WebArchive createServletGuice() throws Exception {
-    return createServletDeployment("guice");
+  public static WebArchive createPortletGuice() throws Exception {
+    return createPortletDeployment("guice");
   }
   
   @Deployment(testable = false, name = "weld", order = 3)
-  public static WebArchive createServletWeld() throws Exception {
-    return createServletDeployment("weld");
+  public static WebArchive createPortletWeld() throws Exception {
+    return createPortletDeployment("weld");
   }
   
   @Drone
@@ -61,22 +61,22 @@ public class AssemblyITCase extends AbstractITCase {
 
   @ArquillianResource
   protected URL deploymentURL;
-
+  
   @Test @RunAsClient @OperateOnDeployment("spring")
   public void testSpring() throws Exception {
-    driver.get(deploymentURL.toURI().toString());
+    driver.get(deploymentURL.toURI().toString() + "/embed/AssemblyPortlet");
     Assert.assertEquals("pass", driver.findElement(By.tagName("body")).getText());
   }
   
   @Test @RunAsClient @OperateOnDeployment("guice")
   public void testGuice() throws Exception {
-    driver.get(deploymentURL.toURI().toString());
+    driver.get(deploymentURL.toURI().toString() + "/embed/AssemblyPortlet");
     Assert.assertEquals("pass", driver.findElement(By.tagName("body")).getText());
   }
   
   @Test @RunAsClient @OperateOnDeployment("weld")
   public void testWeld() throws Exception {
-    driver.get(deploymentURL.toURI().toString());
+    driver.get(deploymentURL.toURI().toString() + "/embed/AssemblyPortlet");
     Assert.assertEquals("pass", driver.findElement(By.tagName("body")).getText());
   }
 }

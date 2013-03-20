@@ -3,11 +3,22 @@
   xsi:schemaLocation="
         http://jboss.org/schema/arquillian
         http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
-  <container qualifier="tomcat-remote-7" default="true">
-    <configuration>
-      <property name="catalinaHome">${catalina.home}</property>
-      <property name="user">${tomcat.user}</property>
-      <property name="pass">${tomcat.password}</property>
-    </configuration>
-  </container>
+        
+    <container qualifier="tomcat7">
+      <configuration>
+        <property name="catalinaHome">${container.home}</property>
+        <property name="user">${tomcat.user}</property>
+        <property name="pass">${tomcat.password}</property>
+      </configuration>
+    </container>
+
+    <container qualifier="gatein">
+      <configuration>
+        <property name="catalinaHome">${container.home}</property>
+        <property name="javaVmArguments">-Xms128m -Xmx384m -XX:MaxPermSize=192m  -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog -Djava.security.auth.login.config=../conf/jaas.conf -Dexo.product.developing=false -Dexo.conf.dir.name=gatein/conf -Djava.awt.headless=true  -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager</property>
+        <property name="user">${tomcat.user}</property>
+        <property name="pass">${tomcat.password}</property>
+      </configuration>
+    </container>
+  
 </arquillian>

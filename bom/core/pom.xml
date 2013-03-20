@@ -140,12 +140,77 @@
 
 	<profiles>
 		<profile>
-			<id>integration-test</id>
+			<id>integration-tomcat</id>
 			<build>
 				<plugins>
 					<plugin>
 						<artifactId>maven-failsafe-plugin</artifactId>
 						<version>2.12.1</version>
+						<configuration>
+							<systemPropertyVariables>
+								<arquillian.launch>tomcat7</arquillian.launch>
+							</systemPropertyVariables>
+							<excludes>
+								<exclude>**/AssemblyGateInITCase.java</exclude>
+							</excludes>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>org.juzu</groupId>
+								<artifactId>juzu-bom-core</artifactId>
+								<version>${project.version}</version>
+							</dependency>
+						</dependencies>
+						<configuration>
+							<attach>true</attach>
+							<finalName>assembly</finalName>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>tomcat-guice</descriptorRef>
+										<descriptorRef>tomcat-spring</descriptorRef>
+										<descriptorRef>tomcat-weld</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>integration-gatein</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>2.12.1</version>
+						<configuration>
+							<systemPropertyVariables>
+								<arquillian.launch>gatein</arquillian.launch>
+							</systemPropertyVariables>
+							<excludes>
+								<exclude>**/AssemblyTomcatITCase.java</exclude>
+							</excludes>
+						</configuration>
 						<executions>
 							<execution>
 								<goals>
@@ -178,9 +243,6 @@
 								<configuration>
 									<descriptorRefs>
 										<descriptorRef>gatein</descriptorRef>
-										<descriptorRef>tomcat-guice</descriptorRef>
-										<descriptorRef>tomcat-spring</descriptorRef>
-										<descriptorRef>tomcat-weld</descriptorRef>
 									</descriptorRefs>
 								</configuration>
 							</execution>
