@@ -56,6 +56,7 @@
         <exclude>com.google.inject:guice</exclude>
 
         <!-- Tomcat excludes -->
+        <exclude>commons-logging:commons-logging</exclude>
         <exclude>org.javassist:javassist</exclude>
         <exclude>javax.servlet:javax.servlet-api</exclude>
 
