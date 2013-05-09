@@ -34,6 +34,7 @@ import juzu.impl.inject.spi.spring.SpringInjector;
 import juzu.impl.common.Logger;
 import juzu.impl.plugin.Plugin;
 import juzu.impl.plugin.PluginContext;
+import juzu.impl.plugin.amd.AMDPlugin;
 import juzu.impl.plugin.application.descriptor.ApplicationDescriptor;
 import juzu.impl.plugin.asset.AssetPlugin;
 import juzu.impl.plugin.module.ModuleLifeCycle;
@@ -86,6 +87,9 @@ public class ApplicationLifeCycle<P, R> implements Closeable {
 
   /** . */
   private AssetManager scriptManager;
+  
+  /** .*/
+  private AssetManager amdMaganer;
 
   /** . */
   private InjectionContext<?, ?> injectionContext;
@@ -131,6 +135,10 @@ public class ApplicationLifeCycle<P, R> implements Closeable {
 
   public AssetManager getScriptManager() {
     return scriptManager;
+  }
+  
+  public AssetManager getAMDManager() {
+    return amdMaganer;
   }
 
   public AssetManager getStylesheetManager() {
@@ -261,6 +269,7 @@ public class ApplicationLifeCycle<P, R> implements Closeable {
 
     //
     AssetPlugin assetPlugin = injectionContext.get(AssetPlugin.class).get();
+    AMDPlugin amdPlugin = injectionContext.get(AMDPlugin.class).get();
     BeanLifeCycle<Application> application = injectionContext.get(Application.class);
 
     //
@@ -270,6 +279,7 @@ public class ApplicationLifeCycle<P, R> implements Closeable {
 
     //
     this.injectionContext = injectionContext;
+    this.amdMaganer = amdPlugin.getAMDManager();
     this.scriptManager = assetPlugin.getScriptManager();
     this.stylesheetManager = assetPlugin.getStylesheetManager();
     this.descriptor = descriptor;

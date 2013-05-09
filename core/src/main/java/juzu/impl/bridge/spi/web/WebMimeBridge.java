@@ -65,6 +65,12 @@ public abstract class WebMimeBridge extends WebRequestBridge implements MimeBrid
         Iterable<Asset> scriptValues = handler.getBridge().application.getScriptManager().resolveAssets(scripts);
         properties.setValues(ViewStreamable.SCRIPT_ASSET, scriptValues);
       }
+      
+      Iterable<String> modules = properties.getValues(PropertyType.AMD);
+      if (modules != null) {
+        Iterable<Asset> amdValues = handler.getBridge().application.getAMDManager().resolveAssets(modules);
+        properties.setValues(ViewStreamable.AMD_ASSET, amdValues);
+      }
 
       //
       http.send(status);

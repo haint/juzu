@@ -129,7 +129,7 @@ public abstract class WebBridge {
   protected void end(Stream stream) {
     // Do nothing by default
   }
-
+  
   protected void end() {
     // Do nothing by default
   }

@@ -27,6 +27,9 @@ import juzu.io.Streamable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /** @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a> */
@@ -37,6 +40,9 @@ public abstract class ViewStreamable implements Streamable {
 
   /** . */
   public static final PropertyType<Asset> SCRIPT_ASSET = new PropertyType<Asset>() {};
+  
+  /** .*/
+  public static final PropertyType<Asset> AMD_ASSET = new PropertyType<Asset>() {};
 
   /** . */
   private final Response.Body content;
@@ -163,6 +169,12 @@ public abstract class ViewStreamable implements Streamable {
         writer.append("\"></script>\n");
       }
     }
+    
+    //
+    Iterable<Asset> modules = properties.getValues(AMD_ASSET);
+    if(modules != null) {
+      renderAMD(modules, writer);
+    }
 
     //
     writer.append("</head>\n");
@@ -172,6 +184,39 @@ public abstract class ViewStreamable implements Streamable {
   private void sendFooter(Stream writer) throws IOException {
     writer.append("</body>\n");
     writer.append("</html>\n");
+  }
+  
+  private void renderAMD(Iterable<Asset> modules, Appendable appendable) throws IOException {
+    Asset require = null;
+    List<Asset> paths = new ArrayList<Asset>();
+    for(Asset module : modules) {
+      if(module.getId().equals("juzu.amd")) {
+        require = module;
+      } else {
+        paths.add(module);
+      }
+    }
+    appendable.append("<script type=\"text/javascript\">");
+    appendable.append(" var require={");
+    appendable.append("\"paths\":{");
+    for(Iterator<Asset> i = paths.iterator(); i.hasNext();) {
+      Asset path = i.next();
+      appendable.append("\"").append(path.getId()).append("\":\"");
+      String uri = path.getURI();
+      uri = uri.substring(0, uri.lastIndexOf(".js"));
+      renderAssetURL(path.getLocation(), uri, appendable);
+      appendable.append("\"");
+      if(i.hasNext()) {
+        appendable.append(",");
+      }
+    }
+    appendable.append("}");
+    appendable.append("};");
+    appendable.append("</script>");
+    
+    appendable.append("<script type=\"text/javascript\" src=\"");
+    renderAssetURL(require.getLocation(), require.getURI(), appendable);
+    appendable.append("\"></script>\n");
   }
 
   public abstract void renderAssetURL(AssetLocation location, String uri, Appendable appendable) throws IOException;

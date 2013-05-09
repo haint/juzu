@@ -57,6 +57,14 @@ public class AssetServer {
           contentType = null;
           in = null;
         }
+        
+        if(in == null) {
+          url = runtime.getAMDManager().resolveAsset(path);
+          if(url != null) {
+            contentType = "text/javascript";
+            in = url.openStream();
+          }
+        }
         if (in == null) {
           url = runtime.getStylesheetManager().resolveAsset(path);
           if (url != null) {
