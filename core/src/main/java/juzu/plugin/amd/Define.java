@@ -17,6 +17,10 @@
  */
 package juzu.plugin.amd;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import juzu.asset.AssetLocation;
 
 /**
@@ -24,11 +28,15 @@ import juzu.asset.AssetLocation;
  * @version $Id$
  *
  */
-public @interface Module {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
+public @interface Define {
 
   String name();
   
   String path();
+  
+  Dependency[] dependencies() default {};
   
   AssetLocation location() default AssetLocation.APPLICATION;
 }

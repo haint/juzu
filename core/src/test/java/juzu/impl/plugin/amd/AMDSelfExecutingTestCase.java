@@ -17,8 +17,6 @@
  */
 package juzu.impl.plugin.amd;
 
-import juzu.test.AbstractWebTestCase;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -28,16 +26,18 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
+import juzu.test.AbstractWebTestCase;
+
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class AMDPluginTestCase extends AbstractWebTestCase {
+public class AMDSelfExecutingTestCase extends AbstractWebTestCase {
   
   @Deployment(testable = false)
   public static WebArchive createDeployment() {
-    WebArchive war = createServletDeployment(true, "plugin.amd");
+    WebArchive war = createServletDeployment(true, "plugin.amd.self.executing");
     return war;
   }
   
@@ -53,19 +53,5 @@ public class AMDPluginTestCase extends AbstractWebTestCase {
     WebElement trigger = driver.findElement(By.id("trigger"));
     trigger.click();
     assertEquals("Hello", driver.switchTo().alert().getText());
-    
-    //
-//    UserAgent ua = assertInitialPage();
-//    HtmlPage page = ua.getHomePage();
-//    List<String> alerts = ua.getAlerts(page);
-//    assertEquals(Arrays.asList("Hello World"), alerts);
-    
-//    HtmlAnchor trigger2 = (HtmlAnchor)page.getElementById("trigger");
-//    trigger2.click();
-//    alerts = ua.getAlerts(page);
-//    assertEquals(Arrays.asList("Hello"), alerts);
-//
-//    DomNodeList<HtmlElement> links = page.getElementsByTagName("script");
-//    assertEquals(3, links.size());
   }
 }

@@ -17,6 +17,11 @@
  */
 package juzu.plugin.amd;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import juzu.asset.AssetLocation;
 
 /**
@@ -24,6 +29,8 @@ import juzu.asset.AssetLocation;
  * @version $Id$
  *
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PACKAGE)
 public @interface AMD {
   
   /**
@@ -31,7 +38,7 @@ public @interface AMD {
    * 
    * @return the declared amd modules
    */
-  Module[] modules() default {};
+  Define[] modules() default {};
   
   /**
    * The default asset location used by the contained assets when no location

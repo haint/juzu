@@ -15,43 +15,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.impl.plugin.amd;
+package juzu.plugin.amd;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.List;
-
-import juzu.Scope;
-import juzu.impl.asset.amd.AMDMetaData;
-import juzu.impl.asset.amd.AMDScriptManager;
-import juzu.impl.common.NameLiteral;
-import juzu.impl.common.Tools;
-import juzu.impl.inject.BeanDescriptor;
-import juzu.impl.metadata.Descriptor;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class AMDDescriptor extends Descriptor {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
+public @interface Dependency {
   
-  private final List<AMDMetaData> modules;
+  String name();
   
-  public AMDDescriptor(List<AMDMetaData> modules) {
-    this.modules = modules;
-  }
-  
-  public List<AMDMetaData> getModules() {
-    return modules;
-  }
-  
-  @Override
-  public Iterable<BeanDescriptor> getBeans() {
-    return Tools.list(
-      BeanDescriptor.createFromBean(
-        AMDScriptManager.class,
-        Scope.SINGLETON,
-        Collections.<Annotation>singletonList(new NameLiteral("juzu.asset_manager.amd"))));
-  }
+  String alias() default "";
 }

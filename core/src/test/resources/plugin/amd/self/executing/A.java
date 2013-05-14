@@ -15,43 +15,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.impl.plugin.amd;
+package plugin.amd.self.executing;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.List;
+import javax.inject.Inject;
 
-import juzu.Scope;
-import juzu.impl.asset.amd.AMDMetaData;
-import juzu.impl.asset.amd.AMDScriptManager;
-import juzu.impl.common.NameLiteral;
-import juzu.impl.common.Tools;
-import juzu.impl.inject.BeanDescriptor;
-import juzu.impl.metadata.Descriptor;
+import juzu.Path;
+import juzu.Route;
+import juzu.View;
+import juzu.template.Template;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class AMDDescriptor extends Descriptor {
+public class A {
+
+  @Inject
+  @Path("index.gtmpl")
+  Template index;
   
-  private final List<AMDMetaData> modules;
+  @Inject
+  @Path("foo.gtmpl")
+  Template foo;
   
-  public AMDDescriptor(List<AMDMetaData> modules) {
-    this.modules = modules;
+  @View  @Route("/")
+  public void index() {
+    index.render();
   }
   
-  public List<AMDMetaData> getModules() {
-    return modules;
-  }
-  
-  @Override
-  public Iterable<BeanDescriptor> getBeans() {
-    return Tools.list(
-      BeanDescriptor.createFromBean(
-        AMDScriptManager.class,
-        Scope.SINGLETON,
-        Collections.<Annotation>singletonList(new NameLiteral("juzu.asset_manager.amd"))));
+  @View @Route("/foo")
+  public void foo() {
+    foo.render();
   }
 }

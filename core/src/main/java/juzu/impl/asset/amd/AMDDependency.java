@@ -15,43 +15,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.impl.plugin.amd;
-
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.List;
-
-import juzu.Scope;
-import juzu.impl.asset.amd.AMDMetaData;
-import juzu.impl.asset.amd.AMDScriptManager;
-import juzu.impl.common.NameLiteral;
-import juzu.impl.common.Tools;
-import juzu.impl.inject.BeanDescriptor;
-import juzu.impl.metadata.Descriptor;
+package juzu.impl.asset.amd;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class AMDDescriptor extends Descriptor {
+public class AMDDependency {
+
+  /** .*/
+  final String name;
   
-  private final List<AMDMetaData> modules;
+  /** .*/
+  final String alias;
   
-  public AMDDescriptor(List<AMDMetaData> modules) {
-    this.modules = modules;
+  public AMDDependency(String name) {
+    this(name, null);
   }
   
-  public List<AMDMetaData> getModules() {
-    return modules;
+  public AMDDependency(String name, String alias) {
+    this.name = name;
+    this.alias = alias;
   }
   
-  @Override
-  public Iterable<BeanDescriptor> getBeans() {
-    return Tools.list(
-      BeanDescriptor.createFromBean(
-        AMDScriptManager.class,
-        Scope.SINGLETON,
-        Collections.<Annotation>singletonList(new NameLiteral("juzu.asset_manager.amd"))));
+  public String getName() {
+    return name;
+  }
+  
+  public String getAlias() {
+    return alias;
   }
 }
