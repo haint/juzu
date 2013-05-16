@@ -15,30 +15,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package juzu.plugin.amd;
+package juzu.impl.plugin.amd;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import juzu.test.AbstractWebTestCase;
 
-import juzu.asset.AssetLocation;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({})
-public @interface Define {
+public class AMDAdapterTestCase extends AbstractWebTestCase {
 
-  String name();
+  @Deployment(testable = false)
+  public static WebArchive createDeployment() {
+    WebArchive war = createServletDeployment(true, "plugin.amd.adapter");
+    return war;
+  }
   
-  String path();
-  
-  String adapter() default "";
-  
-  Dependency[] dependencies() default {};
-  
-  AssetLocation location() default AssetLocation.APPLICATION;
+  @Drone
+  FirefoxDriver driver;
+
+  @Test @RunAsClient
+  public void test() throws Exception {
+    driver.get(applicationURL().toString());
+    assertEquals("hello world", driver.switchTo().alert().getText());
+  }
 }

@@ -119,10 +119,14 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter{
       }
       
       //
+      String adapter = module.getString("adapter");
+      
+      //
       AMDMetaData descriptor = new AMDMetaData(
         name,
         location,
-        value
+        value,
+        adapter
       );
       if(dependencies != null && !dependencies.isEmpty()) {
         for(JSON dependency : dependencies) {

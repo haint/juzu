@@ -42,14 +42,22 @@ public class AMDMetaData {
   /** The asset dependencies. */
   final Map<String, AMDDependency> dependencies;
   
+  /** The adapter to adapt script. */
+  final String adapter;
+  
   public AMDMetaData(String name, AssetLocation location, String path) {
-    this(name, location, path, null);
+    this(name, location, path, null, null);
   }
   
-  public AMDMetaData(String name, AssetLocation location, String path, Map<String, AMDDependency> dependencies) {
+  public AMDMetaData(String name, AssetLocation location, String path, String adapter) {
+    this(name, location, path, adapter, null);
+  }
+  
+  public AMDMetaData(String name, AssetLocation location, String path, String adapter, Map<String, AMDDependency> dependencies) {
     this.name = name;
     this.location = location;
     this.path = path;
+    this.adapter = adapter;
     this.dependencies = dependencies == null ? new HashMap<String, AMDDependency>() : dependencies;
   }
   
@@ -63,6 +71,10 @@ public class AMDMetaData {
   
   public String getPath() {
     return path;
+  }
+  
+  public String getAdapter() {
+    return adapter;
   }
   
   public void addDependency(AMDDependency dependency) {

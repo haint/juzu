@@ -48,8 +48,7 @@ public class AMDScriptManager extends AssetManager {
     throw new UnsupportedOperationException("The AMD script manager support only to add amd metadata");
   }
 
-  public String addAMD(AMDMetaData data, URL url) throws NullPointerException, IllegalArgumentException,
-    IOException {
+  public String addAMD(AMDMetaData data, URL url) throws NullPointerException, IllegalArgumentException, IOException {
     String name = data.name;
 
     // Use value hashcode if no id is provided
@@ -65,7 +64,7 @@ public class AMDScriptManager extends AssetManager {
       //
       switch (data.location) {
         case APPLICATION :
-          if("juzu.amd".equals(data.name) || "juzu.amd.wrapper".equals(data.name)) {
+          if ("juzu.amd".equals(data.name) || "juzu.amd.wrapper".equals(data.name)) {
             resources.put(data.path, url);
           } else {
             String content = wrap(data, url);
@@ -84,7 +83,7 @@ public class AMDScriptManager extends AssetManager {
     //
     return name;
   }
-  
+
   private void joinDepenencies(StringBuilder sb, AMDMetaData data) {
     for (Iterator<AMDDependency> i = data.dependencies.values().iterator(); i.hasNext();) {
       AMDDependency dependency = i.next();
@@ -93,7 +92,7 @@ public class AMDScriptManager extends AssetManager {
         sb.append(", ");
     }
   }
-  
+
   private void joinParams(StringBuilder sb, AMDMetaData data) {
     for (Iterator<AMDDependency> i = data.dependencies.values().iterator(); i.hasNext();) {
       AMDDependency dependency = i.next();
@@ -106,15 +105,15 @@ public class AMDScriptManager extends AssetManager {
         sb.append(", ");
     }
   }
-  
+
   private String wrap(AMDMetaData data, URL url) throws IOException {
     StringBuilder sb = new StringBuilder();
     sb.append("\ndefine('").append(data.name).append("', [");
     joinDepenencies(sb, data);
-    
+
     sb.append("], function(");
     joinParams(sb, data);
-    
+
     sb.append(") {\nvar require = Wrapper.require, requirejs = Wrapper.require,define = Wrapper.define;");
     sb.append("\nWrapper.define.names=[");
     joinDepenencies(sb, data);
@@ -123,6 +122,18 @@ public class AMDScriptManager extends AssetManager {
     joinParams(sb, data);
     sb.append("];");
     sb.append("\nreturn ");
+
+    int idx = -1;
+    String adapter = data.getAdapter();
+    if (adapter != null && !adapter.isEmpty()) {
+      idx = adapter.indexOf("@{include}");
+    }
+
+    // start of adapter
+    if (idx != -1) {
+      sb.append(adapter.substring(0, idx)).append("\n");
+    }
+
     NormalizeJSReader reader = new NormalizeJSReader(new InputStreamReader(url.openStream()));
     char[] buffer = new char[512];
     while (true) {
@@ -135,6 +146,12 @@ public class AMDScriptManager extends AssetManager {
       }
       sb.append(buffer, 0, i);
     }
+
+    // end of adapter
+    if (idx != -1) {
+      sb.append(adapter.substring(idx + "@{include}".length(), adapter.length()));
+    }
+
     sb.append("\n});");
     return sb.toString();
   }
