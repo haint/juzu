@@ -45,134 +45,137 @@ import juzu.request.Phase;
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
-public class AMDPlugin extends ApplicationPlugin implements RequestFilter{
+public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
 
-  /** .*/
-  private String[] modules;
-  
-  /** .*/
+  /** . */
+  private String[] defines;
+
+  /** . */
+  private String[] requires;
+
+  /** . */
   private AMDDescriptor descriptor;
-  
-  /** .*/
+
+  /** . */
   private PluginContext context;
 
-  /** .*/
+  /** . */
   @Inject
   @Named("juzu.asset_manager.amd")
   AMDScriptManager manager;
-  
+
   public AMDPlugin() {
     super("amd");
   }
-  
+
   public AssetManager getAMDManager() {
     return manager;
   }
-  
+
   @Override
   public Descriptor init(PluginContext context) throws Exception {
     JSON config = context.getConfig();
-    List<AMDMetaData> modules;
-    if(config != null) {
+    List<AMDMetaData> defines = Collections.emptyList();
+    List<AMDMetaData> requires = Collections.emptyList();
+
+    if (config != null) {
       String packageName = config.getString("package");
-      AssetLocation location = AssetLocation.safeValueOf(config.getString("location"));
-      if (location == null) {
-        location = AssetLocation.APPLICATION;
+      JSON definesJSON = config.getJSON("defines");
+      JSON requiresJSON = config.getJSON("requires");
+
+      if (definesJSON != null) {
+        AssetLocation defineLocation = AssetLocation.safeValueOf(definesJSON.getString("location"));
+        if (defineLocation == null) {
+          defineLocation = AssetLocation.APPLICATION;
+        }
+        defines = load(packageName, defineLocation, definesJSON.getList("value", JSON.class), false);
       }
-      
-      modules = load(packageName, location, config.getList("modules", JSON.class));
-    } else {
-      modules = Collections.emptyList();
+
+      if (requiresJSON != null) {
+        AssetLocation requireLocation = AssetLocation.safeValueOf(requiresJSON.getString("location"));
+        if (requireLocation == null) {
+          requireLocation = AssetLocation.APPLICATION;
+        }
+        requires = load(packageName, requireLocation, requiresJSON.getList("value", JSON.class), true);
+      }
     }
-    this.descriptor = new AMDDescriptor(modules);
+
+    this.descriptor = new AMDDescriptor(defines, requires);
     this.context = context;
     return descriptor;
   }
-  
-  private List<AMDMetaData> load(
-    String packageName,
-    AssetLocation defaultLocation,
-    List<? extends JSON> modules) throws Exception {
-   List<AMDMetaData> abc = Collections.emptyList();
-  if (modules != null && modules.size() > 0) {
-    abc = new ArrayList<AMDMetaData>();
-    for (JSON module : modules) {
-      String name = module.getString("name");
-      AssetLocation location = AssetLocation.safeValueOf(module.getString("location"));
-      List<JSON> dependencies = (List<JSON>)module.getList("dependencies");
-      
-      // We handle here location / perhaps we could handle it at compile time instead?
-      if (location == null) {
-        location = defaultLocation;
-      }
-      
-      if(location == AssetLocation.SERVER && dependencies != null) {
-        throw new UnsupportedOperationException("The AMD wrapping supports only for script is located at APPLICATION");
-      }
 
-      //
-      String value = module.getString("path");
-      if (!value.startsWith("/") && location == AssetLocation.APPLICATION) {
-        value = "/" + packageName.replace('.', '/') + "/" + value;
-      }
-      
-      //
-      String adapter = module.getString("adapter");
-      
-      //
-      AMDMetaData descriptor = new AMDMetaData(
-        name,
-        location,
-        value,
-        adapter
-      );
-      if(dependencies != null && !dependencies.isEmpty()) {
-        for(JSON dependency : dependencies) {
-          String depName = dependency.getString("name");
-          String depAlias = dependency.getString("alias");
-          descriptor.addDependency(new AMDDependency(depName, depAlias));
+  private List<AMDMetaData> load(String packageName, AssetLocation defaultLocation, List<? extends JSON> modules,
+    boolean isRequire) throws Exception {
+    List<AMDMetaData> abc = Collections.emptyList();
+    if (modules != null && modules.size() > 0) {
+      abc = new ArrayList<AMDMetaData>();
+      for (JSON module : modules) {
+        String name = module.getString("name");
+        AssetLocation location = AssetLocation.safeValueOf(module.getString("location"));
+        List<JSON> dependencies = (List<JSON>)module.getList("dependencies");
+
+        // We handle here location / perhaps we could handle it at compile time
+        // instead?
+        if (location == null) {
+          location = defaultLocation;
         }
-      }
 
-      abc.add(descriptor);
+        if (location == AssetLocation.SERVER && dependencies != null) {
+          throw new UnsupportedOperationException("The AMD wrapping supports only for script is located at APPLICATION");
+        }
+
+        //
+        String value = module.getString("path");
+        if (!value.startsWith("/") && location == AssetLocation.APPLICATION) {
+          value = "/" + packageName.replace('.', '/') + "/" + value;
+        }
+
+        //
+        String adapter = module.getString("adapter");
+
+        //
+        AMDMetaData descriptor = new AMDMetaData(name, location, value, adapter, isRequire);
+        if (dependencies != null && !dependencies.isEmpty()) {
+          for (JSON dependency : dependencies) {
+            String depName = dependency.getString("name");
+            String depAlias = dependency.getString("alias");
+            descriptor.addDependency(new AMDDependency(depName, depAlias));
+          }
+        }
+
+        abc.add(descriptor);
+      }
     }
+    return abc;
   }
-  return abc;
-}
-  
+
   @PostConstruct
   public void start() throws Exception {
     URL requirejsURL = AMDPlugin.class.getClassLoader().getResource("juzu/impl/plugin/amd/require.js");
     if (requirejsURL == null) {
       throw new Exception("Not found require.js");
     }
-    
+
     //
-    manager.addAMD(
-        new AMDMetaData(
-            "juzu.amd",
-            AssetLocation.APPLICATION,
-            "/juzu/impl/plugin/amd/require.js"),
-        requirejsURL);
-    
+    manager.addAMD(new AMDMetaData("juzu.amd", AssetLocation.APPLICATION, "/juzu/impl/plugin/amd/require.js"),
+      requirejsURL);
+
     URL wrapperjsURL = AMDPlugin.class.getClassLoader().getResource("juzu/impl/plugin/amd/wrapper.js");
     if (wrapperjsURL == null) {
       throw new Exception("Not found wrapper.js");
     }
-    
+
     //
-    manager.addAMD(
-      new AMDMetaData(
-          "juzu.amd.wrapper",
-          AssetLocation.APPLICATION, 
-          "/juzu/impl/plugin/amd/wrapper.js"),
+    manager.addAMD(new AMDMetaData("juzu.amd.wrapper", AssetLocation.APPLICATION, "/juzu/impl/plugin/amd/wrapper.js"),
       wrapperjsURL);
-    
-    this.modules = process(descriptor.getModules(), manager);
+
+    this.defines = process(descriptor.getDefines(), manager);
+    this.requires = process(descriptor.getRequires(), manager);
   }
-  
+
   private String[] process(List<AMDMetaData> modules, AMDScriptManager manager) throws Exception {
     ArrayList<String> assets = new ArrayList<String>();
     for (AMDMetaData module : modules) {
@@ -209,18 +212,19 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter{
 
   public void invoke(Request request) {
     request.invoke();
-    
+
     //
     if (request.getContext().getPhase() == Phase.VIEW) {
       Response response = request.getResponse();
-      if (response instanceof Response.Render && modules.length > 0) {
+      if (response instanceof Response.Render && (defines.length > 0 || requires.length > 0)) {
         Response.Render render = (Response.Render)response;
 
         //
         PropertyMap properties = new PropertyMap(render.getProperties());
         properties.addValues(PropertyType.AMD, "juzu.amd");
         properties.addValues(PropertyType.AMD, "juzu.amd.wrapper");
-        properties.addValues(PropertyType.AMD, modules);
+        properties.addValues(PropertyType.AMD, defines);
+        properties.addValues(PropertyType.AMD, requires);
 
         // Use a new response
         request.setResponse(new Response.Render(properties, render.getStreamable()));

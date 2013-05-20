@@ -33,11 +33,11 @@ import org.openqa.selenium.firefox.FirefoxDriver;
  * @version $Id$
  *
  */
-public class AMDModularTestCase extends AbstractWebTestCase {
+public class AMDDefineTestCase extends AbstractWebTestCase {
   
   @Deployment(testable = false)
   public static WebArchive createDeployment() {
-    WebArchive war = createServletDeployment(true, "plugin.amd.modular");
+    WebArchive war = createServletDeployment(true, "plugin.amd.define");
     return war;
   }
   

@@ -36,14 +36,21 @@ import juzu.impl.metadata.Descriptor;
  */
 public class AMDDescriptor extends Descriptor {
   
-  private final List<AMDMetaData> modules;
+  private final List<AMDMetaData> defines;
   
-  public AMDDescriptor(List<AMDMetaData> modules) {
-    this.modules = modules;
+  private final List<AMDMetaData> requires;
+  
+  public AMDDescriptor(List<AMDMetaData> defines, List<AMDMetaData> requires) {
+    this.defines = defines;
+    this.requires = requires;
   }
   
-  public List<AMDMetaData> getModules() {
-    return modules;
+  public List<AMDMetaData> getDefines() {
+    return defines;
+  }
+  
+  public List<AMDMetaData> getRequires() {
+    return requires;
   }
   
   @Override

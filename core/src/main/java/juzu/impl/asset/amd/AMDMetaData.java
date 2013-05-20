@@ -45,20 +45,23 @@ public class AMDMetaData {
   /** The adapter to adapt script. */
   final String adapter;
   
+  final boolean isRequire;
+  
   public AMDMetaData(String name, AssetLocation location, String path) {
-    this(name, location, path, null, null);
+    this(name, location, path, null, null, false);
   }
   
-  public AMDMetaData(String name, AssetLocation location, String path, String adapter) {
-    this(name, location, path, adapter, null);
+  public AMDMetaData(String name, AssetLocation location, String path, String adapter, boolean isRequire) {
+    this(name, location, path, adapter, null, isRequire);
   }
   
-  public AMDMetaData(String name, AssetLocation location, String path, String adapter, Map<String, AMDDependency> dependencies) {
+  public AMDMetaData(String name, AssetLocation location, String path, String adapter, Map<String, AMDDependency> dependencies, boolean isRequire) {
     this.name = name;
     this.location = location;
     this.path = path;
     this.adapter = adapter;
     this.dependencies = dependencies == null ? new HashMap<String, AMDDependency>() : dependencies;
+    this.isRequire = isRequire;
   }
   
   public String getName() {
@@ -75,6 +78,10 @@ public class AMDMetaData {
   
   public String getAdapter() {
     return adapter;
+  }
+  
+  public boolean isRequire() {
+    return isRequire;
   }
   
   public void addDependency(AMDDependency dependency) {

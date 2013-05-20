@@ -42,44 +42,64 @@ import juzu.impl.metamodel.AnnotationKey;
 import juzu.impl.metamodel.AnnotationState;
 import juzu.impl.plugin.application.metamodel.ApplicationMetaModel;
 import juzu.impl.plugin.application.metamodel.ApplicationMetaModelPlugin;
-import juzu.plugin.amd.AMD;
+import juzu.plugin.amd.Defines;
+import juzu.plugin.amd.Requires;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
- *
+ * 
  */
 public class AMDMetaModelPlugin extends ApplicationMetaModelPlugin {
 
   /** . */
-  private HashMap<ElementHandle.Package, AnnotationState> annotations = new HashMap<ElementHandle.Package, AnnotationState>();
+  private HashMap<ElementHandle.Package, AnnotationState> defines =
+    new HashMap<ElementHandle.Package, AnnotationState>();
+
+  /** . */
+  private HashMap<ElementHandle.Package, AnnotationState> requires =
+    new HashMap<ElementHandle.Package, AnnotationState>();
 
   public AMDMetaModelPlugin() {
     super("amd");
   }
-  
+
   @Override
   public Set<Class<? extends java.lang.annotation.Annotation>> init(ProcessingContext env) {
-    return Collections.<Class<? extends java.lang.annotation.Annotation>>singleton(AMD.class);
+    return Tools.set(Defines.class, Requires.class);
   }
 
   @Override
   public void processAnnotationAdded(ApplicationMetaModel metaModel, AnnotationKey key, AnnotationState added) {
-    annotations.put(metaModel.getHandle(), added);
+    if (key.getType().equals(Name.create(Defines.class))) {
+      defines.put(metaModel.getHandle(), added);
+    } else if (key.getType().equals(Name.create(Requires.class))) {
+      requires.put(metaModel.getHandle(), added);
+    }
   }
 
   @Override
   public void processAnnotationRemoved(ApplicationMetaModel metaModel, AnnotationKey key, AnnotationState removed) {
-    annotations.remove(metaModel.getHandle());
+    if (key.getType().equals(Name.create(Defines.class))) {
+      defines.remove(metaModel.getHandle());
+    } else if (key.getType().equals(Name.create(Requires.class))) {
+      requires.remove(metaModel.getHandle());
+    }
   }
 
   @Override
   public void prePassivate(ApplicationMetaModel metaModel) {
-    AnnotationState annotation = annotations.get(metaModel.getHandle());
+    AnnotationState defineState = defines.get(metaModel.getHandle());
+    process(defineState, metaModel);
+    AnnotationState requireState = requires.get(metaModel.getHandle());
+    process(requireState, metaModel);
+  }
+
+  private void process(AnnotationState annotation, ApplicationMetaModel metaModel) {
     if (annotation != null) {
       String location = (String)annotation.get("location");
       boolean classpath = location == null || AssetLocation.APPLICATION.equals(AssetLocation.safeValueOf(location));
-      List<AnnotationState> modules = (List<AnnotationState>)annotation.get("modules");
+      List<AnnotationState> modules = (List<AnnotationState>)annotation.get("value");
       ProcessingContext context = metaModel.getProcessingContext();
       if (modules != null) {
         for (AnnotationState module : modules) {
@@ -101,18 +121,18 @@ public class AMDMetaModelPlugin extends ApplicationMetaModelPlugin {
                   FileObject dst = context.getResource(StandardLocation.CLASS_OUTPUT, absolute);
                   if (dst == null || dst.getLastModified() < src.getLastModified()) {
                     in = src.openInputStream();
-                    dst = context.createResource(StandardLocation.CLASS_OUTPUT, absolute, context.get(metaModel.getHandle()));
+                    dst =
+                      context.createResource(StandardLocation.CLASS_OUTPUT, absolute,
+                        context.get(metaModel.getHandle()));
                     context.log("Copying asset from source path " + srcURI + " to class output " + dst.toUri());
                     out = dst.openOutputStream();
                     Tools.copy(in, out);
                   } else {
                     context.log("Found up to date related asset in class output for " + srcURI);
                   }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                   context.log("Could not copy asset " + path + " ", e);
-                }
-                finally {
+                } finally {
                   Tools.safeClose(in);
                   Tools.safeClose(out);
                 }
@@ -125,7 +145,7 @@ public class AMDMetaModelPlugin extends ApplicationMetaModelPlugin {
       }
     }
   }
-  
+
   private List<JSON> build(List<Map<String, Object>> scripts) {
     List<JSON> foo = Collections.emptyList();
     if (scripts != null && scripts.size() > 0) {
@@ -140,19 +160,35 @@ public class AMDMetaModelPlugin extends ApplicationMetaModelPlugin {
     }
     return foo;
   }
-  
+
   @Override
   public JSON getDescriptor(ApplicationMetaModel application) {
-    AnnotationState annotation = annotations.get(application.getHandle());
-    if (annotation != null) {
-      JSON json = new JSON();
-      List<Map<String, Object>> modules = (List<Map<String, Object>>)annotation.get("modules");
-      json.set("modules", build(modules));
-      json.set("package", application.getName().append("assets").toString());
-      json.set("location", annotation.get("location"));
-      return json;
-    } else {
-      return null;
+    AnnotationState definesState = defines.get(application.getHandle());
+    AnnotationState requiresState = requires.get(application.getHandle());
+    JSON config = null;
+    if (definesState != null) {
+      config = new JSON();
+      JSON definesJSON = new JSON();
+      List<Map<String, Object>> defines = (List<Map<String, Object>>)definesState.get("value");
+      definesJSON.set("value", build(defines));
+      definesJSON.set("location", definesState.get("location"));
+      config.set("defines", definesJSON);
     }
+    if (requiresState != null) {
+      if (config == null) {
+        config = new JSON();
+      }
+      JSON requiresJSON = new JSON();
+      List<Map<String, Object>> requires = (List<Map<String, Object>>)requiresState.get("value");
+      requiresJSON.set("value", build(requires));
+      requiresJSON.set("location", requiresState.get("location"));
+      config.set("requires", requiresJSON);
+    }
+
+    if (config != null) {
+      config.set("package", application.getName().append("assets").toString());
+    }
+
+    return config;
   }
 }

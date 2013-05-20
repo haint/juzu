@@ -33,7 +33,6 @@ import juzu.impl.asset.AssetManager;
 import juzu.impl.asset.AssetMetaData;
 import juzu.impl.asset.AssetNode;
 import juzu.impl.common.CompositeReader;
-import juzu.impl.common.Tools;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -64,7 +63,7 @@ public class AMDScriptManager extends AssetManager {
       //
       switch (data.location) {
         case APPLICATION :
-          if ("juzu.amd".equals(data.name) || "juzu.amd.wrapper".equals(data.name)) {
+          if ("juzu.amd".equals(data.name) || "juzu.amd.wrapper".equals(data.name) || data.isRequire) {
             resources.put(data.path, url);
           } else {
             String content = wrap(data, url);
