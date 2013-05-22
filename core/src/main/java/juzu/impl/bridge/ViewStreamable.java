@@ -188,10 +188,13 @@ public abstract class ViewStreamable implements Streamable {
   
   private void renderAMD(Iterable<Asset> modules, Appendable appendable) throws IOException {
     Asset require = null;
+    Asset wrapper = null;
     List<Asset> paths = new ArrayList<Asset>();
     for(Asset module : modules) {
       if(module.getId().equals("juzu.amd")) {
         require = module;
+      } else if (module.getId().equals("juzu.amd.wrapper")) {
+        wrapper = module;
       } else {
         paths.add(module);
       }
@@ -216,6 +219,10 @@ public abstract class ViewStreamable implements Streamable {
     
     appendable.append("<script type=\"text/javascript\" src=\"");
     renderAssetURL(require.getLocation(), require.getURI(), appendable);
+    appendable.append("\"></script>\n");
+    
+    appendable.append("<script type=\"text/javascript\" src=\"");
+    renderAssetURL(wrapper.getLocation(), wrapper.getURI(), appendable);
     appendable.append("\"></script>\n");
   }
 

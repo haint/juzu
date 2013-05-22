@@ -35,8 +35,8 @@ import juzu.impl.asset.amd.AMDDependency;
 import juzu.impl.asset.amd.AMDMetaData;
 import juzu.impl.asset.amd.AMDScriptManager;
 import juzu.impl.common.JSON;
-import juzu.impl.metadata.Descriptor;
 import juzu.impl.plugin.PluginContext;
+import juzu.impl.plugin.PluginDescriptor;
 import juzu.impl.plugin.application.ApplicationPlugin;
 import juzu.impl.request.Request;
 import juzu.impl.request.RequestFilter;
@@ -75,7 +75,7 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
   }
 
   @Override
-  public Descriptor init(PluginContext context) throws Exception {
+  public PluginDescriptor init(PluginContext context) throws Exception {
     JSON config = context.getConfig();
     List<AMDMetaData> defines = Collections.emptyList();
     List<AMDMetaData> requires = Collections.emptyList();
@@ -216,8 +216,8 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
     //
     if (request.getContext().getPhase() == Phase.VIEW) {
       Response response = request.getResponse();
-      if (response instanceof Response.Render && (defines.length > 0 || requires.length > 0)) {
-        Response.Render render = (Response.Render)response;
+      if (response instanceof Response.Content && (defines.length > 0 || requires.length > 0)) {
+        Response.Content render = (Response.Content)response;
 
         //
         PropertyMap properties = new PropertyMap(render.getProperties());
@@ -227,7 +227,7 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
         properties.addValues(PropertyType.AMD, requires);
 
         // Use a new response
-        request.setResponse(new Response.Render(properties, render.getStreamable()));
+        request.setResponse(new Response.Content(properties, render.getStreamable()));
       }
     }
   }

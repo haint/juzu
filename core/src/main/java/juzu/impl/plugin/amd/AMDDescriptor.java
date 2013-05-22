@@ -27,14 +27,14 @@ import juzu.impl.asset.amd.AMDScriptManager;
 import juzu.impl.common.NameLiteral;
 import juzu.impl.common.Tools;
 import juzu.impl.inject.BeanDescriptor;
-import juzu.impl.metadata.Descriptor;
+import juzu.impl.plugin.PluginDescriptor;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
  * @version $Id$
  *
  */
-public class AMDDescriptor extends Descriptor {
+public class AMDDescriptor extends PluginDescriptor {
   
   private final List<AMDMetaData> defines;
   
