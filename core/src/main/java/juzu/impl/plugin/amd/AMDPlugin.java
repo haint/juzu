@@ -26,6 +26,9 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.webjars.AssetLocator;
+import org.webjars.WebJarAssetLocator;
+
 import juzu.PropertyMap;
 import juzu.PropertyType;
 import juzu.Response;
@@ -129,8 +132,8 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
 
         //
         String value = module.getString("path");
-        if (!value.startsWith("/") && location == AssetLocation.APPLICATION) {
-          value = "/" + packageName.replace('.', '/') + "/" + value;
+        if (!value.startsWith("/") && !value.startsWith("webjars!") && location == AssetLocation.APPLICATION) {
+          value = "/" + application.getPackageName().replace('.', '/') + "/" + packageName.replace('.', '/') + "/" + value;
         }
 
         //
@@ -184,7 +187,14 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
       AssetLocation location = module.getLocation();
       URL url;
       if (location == AssetLocation.APPLICATION) {
-        url = context.getApplicationResolver().resolve(module.getPath());
+        String path = module.getPath();
+        url = context.getApplicationResolver().resolve(path);
+        if (url == null) {
+          if (path.startsWith("/webjars!")) {
+            String asset = path.substring("/webjars!".length());
+            url = Thread.currentThread().getContextClassLoader().getResource( new WebJarAssetLocator().getFullPath(asset));
+          }
+        }
         if (url == null) {
           throw new Exception("Could not resolve application  " + module.getPath());
         }
@@ -227,7 +237,7 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
         properties.addValues(PropertyType.AMD, requires);
 
         // Use a new response
-        request.setResponse(new Response.Content(properties, render.getStreamable()));
+        request.setResponse(new Response.Content(render.getCode(), properties, render.getStreamable()));
       }
     }
   }

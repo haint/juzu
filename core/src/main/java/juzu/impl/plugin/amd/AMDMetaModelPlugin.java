@@ -186,7 +186,7 @@ public class AMDMetaModelPlugin extends ApplicationMetaModelPlugin {
     }
 
     if (config != null) {
-      config.set("package", application.getName().append("assets").toString());
+      config.set("package", "assets");
     }
 
     return config;
