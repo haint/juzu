@@ -24,7 +24,6 @@ import juzu.test.UserAgent;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 
@@ -37,12 +36,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * @version $Id$
  *
  */
-public class AMDLocationRequireTestCase extends AbstractAMDTestCase {
-  
+public class AMDGroupDefineTestCase extends AbstractAMDTestCase {
+
   @Deployment(testable = false)
   public static WebArchive createDeployment() {
-    WebArchive war = createServletDeployment(true, "plugin.amd.location.require");
-    war.addAsWebResource(new StringAsset("define('Bar', ['Foo'], function(foo) { return { text : foo.text + ' World' };});"), "js/bar.js");
+    WebArchive war = createServletDeployment(true, "plugin.amd.group.define");
     return war;
   }
 
@@ -52,9 +50,10 @@ public class AMDLocationRequireTestCase extends AbstractAMDTestCase {
     UserAgent ua = assertInitialPage();
     HtmlPage page = ua.getHomePage();
     ua.waitForBackgroundJavaScript(1000);
+    
     DomNodeList<DomElement> scripts = page.getElementsByTagName("script");
     
-    assertEquals(6, scripts.size());
+    assertEquals(5, scripts.size());
     
     ArrayList<String> sources = new ArrayList<String>();
     for(DomElement script : scripts) {
@@ -66,7 +65,6 @@ public class AMDLocationRequireTestCase extends AbstractAMDTestCase {
     
     assertList(Tools.list("/juzu/assets/juzu/impl/plugin/amd/require.js",
         "/juzu/assets/juzu/impl/plugin/amd/wrapper.js",
-        "/juzu/js/bar.js",
-        "/juzu/assets/plugin/amd/location/require/assets/foo.js"), sources);
+        "/juzu/assets/juzu/impl/plugin/amd/juzu.js"), sources);
   }
 }

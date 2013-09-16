@@ -18,6 +18,8 @@
 package juzu.impl.plugin.amd;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import juzu.impl.common.Tools;
 import juzu.test.UserAgent;
@@ -37,11 +39,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * @version $Id$
  *
  */
-public class AMDLocationRequireTestCase extends AbstractAMDTestCase {
-  
+public class AMDGroupRequireMixTestCase extends AbstractAMDTestCase {
   @Deployment(testable = false)
   public static WebArchive createDeployment() {
-    WebArchive war = createServletDeployment(true, "plugin.amd.location.require");
+    WebArchive war = createServletDeployment(true, "plugin.amd.group.mix");
     war.addAsWebResource(new StringAsset("define('Bar', ['Foo'], function(foo) { return { text : foo.text + ' World' };});"), "js/bar.js");
     return war;
   }
@@ -52,9 +53,10 @@ public class AMDLocationRequireTestCase extends AbstractAMDTestCase {
     UserAgent ua = assertInitialPage();
     HtmlPage page = ua.getHomePage();
     ua.waitForBackgroundJavaScript(1000);
+    
     DomNodeList<DomElement> scripts = page.getElementsByTagName("script");
     
-    assertEquals(6, scripts.size());
+    assertEquals(5, scripts.size());
     
     ArrayList<String> sources = new ArrayList<String>();
     for(DomElement script : scripts) {
@@ -66,7 +68,9 @@ public class AMDLocationRequireTestCase extends AbstractAMDTestCase {
     
     assertList(Tools.list("/juzu/assets/juzu/impl/plugin/amd/require.js",
         "/juzu/assets/juzu/impl/plugin/amd/wrapper.js",
-        "/juzu/js/bar.js",
-        "/juzu/assets/plugin/amd/location/require/assets/foo.js"), sources);
+        "/juzu/assets/juzu/impl/plugin/amd/juzu.js"), sources);
+    
+    List<String> alert = ua.getAlerts(page);
+    assertEquals(Collections.singletonList("Hello World"), alert);
   }
 }

@@ -24,9 +24,14 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+
+import juzu.asset.AssetLocation;
+import juzu.impl.common.Tools;
 
 /**
  * @author <a href="mailto:haithanh0809@gmail.com">Nguyen Thanh Hai</a>
@@ -36,131 +41,76 @@ import java.util.LinkedHashMap;
 public class ModuleManager {
 
   /** . */
-  protected final LinkedHashMap<String, Module> modules = new LinkedHashMap<String, Module>();
-
+  private final LinkedHashMap<String, Module> modules = new LinkedHashMap<String, Module>();
+  
   /** . */
-  protected final HashMap<String, URL> resources = new HashMap<String, URL>();
+  private final HashMap<String, HashSet<Module>> groups = new HashMap<String, HashSet<Module>>();
 
-  public Module addAMD(ModuleMetaData data, URL url) throws NullPointerException, IllegalArgumentException, IOException {
+  public void addAMD(ModuleMetaData data, URL url) throws NullPointerException, IllegalArgumentException, IOException {
     String name = data.getId();
-
-    // Use value hashcode if no id is provided
+    
+    //Use value hashcode if no id is provided
     if (name == null) {
       name = "" + data.getPath().hashCode();
     }
 
     //
-    Module module = modules.get(name);
+    Module module = modules.get(data.getPath());
     if (module == null) {
-      modules.put(name, module = new Module(name, data.getLocation(), data.getPath()));
-
-      //
-      switch (data.getLocation()) {
-        case APPLICATION :
-          if (data instanceof ModuleMetaData.Require) {
-            resources.put(data.getPath(), url);
-          } else {
-            resources.put(data.getPath(), new URL("amd", null, 0, "/", new AMDURLStreamHandler((ModuleMetaData.Define)data, url)));
-          }
-          break;
-        case SERVER :
-        case URL:
-          if (data instanceof ModuleMetaData.Require) {
-            resources.put(data.getPath(), url);
-          }
-          break;
-        default :
-          // Nothing to do
-          break;
+      if (data.getLocation() == AssetLocation.APPLICATION && data instanceof ModuleMetaData.Define) {
+        url = new URL("amd", null, 0, "/", new AMDURLStreamHandler(wrap((ModuleMetaData.Define)data, url)));
       }
+      
+      modules.put(data.getPath(), module = new Module(name, data.getLocation(), data.getPath(), data.getGroup(), url));
     }
-
-    //
-    return module;
+    
+    if (data.getGroup() != null) {
+      HashSet<Module> group = groups.get(data.getGroup());
+      if (group == null) {
+        groups.put(data.getGroup(), group = new HashSet<Module>());
+      }
+      group.add(module);
+    }
+  }
+  
+  public Module[] getModules() throws IOException{
+    ArrayList<Module> holder = new ArrayList<Module>();
+    ArrayList<Module> modified = new ArrayList<Module>();
+    for (Module module : modules.values()) {
+      if (module.group != null) {
+        module = group(module, groups.get(module.group));
+        modified.add(module);
+      }
+      holder.add(module);
+    }
+    for (Module module : modified) {
+      modules.put(module.uri, module);
+    }
+    return holder.toArray(new Module[holder.size()]);
+  }
+  
+  private Module group(Module module, HashSet<Module> groups) throws IOException {
+    StringBuilder sb = new StringBuilder();
+    for (Module group : groups) {
+      sb.append('\n');
+      sb.append(Tools.read(group.url));
+    }
+    return module = new Module(module.id, AssetLocation.APPLICATION, "/juzu/impl/plugin/amd/" + module.group + ".js", module.group, 
+      new URL("amd", null, 0, "/", new AMDURLStreamHandler(sb.toString().getBytes("UTF-8"))));
   }
 
   public URL resolveAsset(String path) {
-    return resources.get(path);
+    Module module = modules.get(path);
+    return module == null ? null : module.getURL();
   }
-
+  
   private class AMDURLStreamHandler extends URLStreamHandler {
 
     /** . */
     private final byte[] data;
 
-    public AMDURLStreamHandler(ModuleMetaData.Define data, URL url) throws IOException {
-
-      StringBuilder sb = new StringBuilder();
-      sb.append("\ndefine('").append(data.getId()).append("', [");
-      joinDependencies(sb, data);
-
-      sb.append("], function(");
-      joinParams(sb, data);
-
-      sb.append(") {\nvar require = Wrapper.require, requirejs = Wrapper.require,define = Wrapper.define;");
-      sb.append("\nWrapper.define.names=[");
-      joinDependencies(sb, data);
-      sb.append("];");
-      sb.append("\nWrapper.define.deps=[");
-      joinParams(sb, data);
-      sb.append("];");
-      sb.append("\nreturn ");
-
-      int idx = -1;
-      String adapter = data.getAdapter();
-      if (adapter != null && !adapter.isEmpty()) {
-        idx = adapter.indexOf("@{include}");
-      }
-
-      // start of adapter
-      if (idx != -1) {
-        sb.append(adapter.substring(0, idx)).append("\n");
-      }
-
-      NormalizeJSReader reader = new NormalizeJSReader(new InputStreamReader(url.openStream()));
-      char[] buffer = new char[512];
-      while (true) {
-        int i = reader.read(buffer);
-        if (i == 0) {
-          continue;
-        }
-        if (i == -1) {
-          break;
-        }
-        sb.append(buffer, 0, i);
-      }
-
-      // end of adapter
-      if (idx != -1) {
-        sb.append(adapter.substring(idx + "@{include}".length(), adapter.length()));
-      }
-
-      sb.append("\n});");
-
-      //
-      this.data = sb.toString().getBytes("UTF-8");
-    }
-
-    private void joinDependencies(StringBuilder sb, ModuleMetaData.Define data) {
-      for (Iterator<AMDDependency> i = data.getDependencies().iterator(); i.hasNext();) {
-        AMDDependency dependency = i.next();
-        sb.append("'").append(dependency.name).append("'");
-        if (i.hasNext())
-          sb.append(", ");
-      }
-    }
-
-    private void joinParams(StringBuilder sb, ModuleMetaData.Define data) {
-      for (Iterator<AMDDependency> i = data.getDependencies().iterator(); i.hasNext();) {
-        AMDDependency dependency = i.next();
-        if (dependency.alias != null && !dependency.alias.isEmpty()) {
-          sb.append(dependency.alias);
-        } else {
-          sb.append(dependency.name);
-        }
-        if (i.hasNext())
-          sb.append(", ");
-      }
+    public AMDURLStreamHandler(byte[] data) throws IOException {
+      this.data = data;
     }
 
     @Override
@@ -174,6 +124,80 @@ public class ModuleManager {
           return new ByteArrayInputStream(data);
         }
       };
+    }
+  }
+  
+  private byte[] wrap(ModuleMetaData.Define data, URL url) throws IOException {
+    StringBuilder sb = new StringBuilder();
+    sb.append("\ndefine('").append(data.getId()).append("', [");
+    joinDependencies(sb, data);
+
+    sb.append("], function(");
+    joinParams(sb, data);
+
+    sb.append(") {\nvar require = Wrapper.require, requirejs = Wrapper.require,define = Wrapper.define;");
+    sb.append("\nWrapper.define.names=[");
+    joinDependencies(sb, data);
+    sb.append("];");
+    sb.append("\nWrapper.define.deps=[");
+    joinParams(sb, data);
+    sb.append("];");
+    sb.append("\nreturn ");
+
+    int idx = -1;
+    String adapter = data.getAdapter();
+    if (adapter != null && !adapter.isEmpty()) {
+      idx = adapter.indexOf("@{include}");
+    }
+
+    // start of adapter
+    if (idx != -1) {
+      sb.append(adapter.substring(0, idx)).append("\n");
+    }
+
+    NormalizeJSReader reader = new NormalizeJSReader(new InputStreamReader(url.openStream()));
+    char[] buffer = new char[512];
+    while (true) {
+      int i = reader.read(buffer);
+      if (i == 0) {
+        continue;
+      }
+      if (i == -1) {
+        break;
+      }
+      sb.append(buffer, 0, i);
+    }
+
+    // end of adapter
+    if (idx != -1) {
+      sb.append(adapter.substring(idx + "@{include}".length(), adapter.length()));
+    }
+
+    sb.append("\n});");
+
+    //
+    return sb.toString().getBytes("UTF-8");
+  }
+  
+  private void joinDependencies(StringBuilder sb, ModuleMetaData.Define data) {
+    for (Iterator<AMDDependency> i = data.getDependencies().iterator(); i.hasNext();) {
+      AMDDependency dependency = i.next();
+      sb.append("'").append(dependency.name).append("'");
+      if (i.hasNext())
+        sb.append(", ");
+    }
+  }
+
+  private void joinParams(StringBuilder sb, ModuleMetaData.Define data) {
+    for (Iterator<AMDDependency> i = data.getDependencies().iterator(); i.hasNext();) {
+      AMDDependency dependency = i.next();
+      if (dependency.alias != null && !dependency.alias.isEmpty()) {
+        sb.append(dependency.alias);
+      } else {
+        sb.append(dependency.name);
+      }
+      if (i.hasNext())
+        sb.append(", ");
     }
   }
 }

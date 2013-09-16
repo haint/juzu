@@ -1,5 +1,5 @@
 (function() {
 	return {
-		text: "Hello"
-	};
+		text : "Hello"
+	}
 })();

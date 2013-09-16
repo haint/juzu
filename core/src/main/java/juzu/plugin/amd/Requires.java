@@ -32,8 +32,8 @@ import juzu.asset.AssetLocation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PACKAGE)
 public @interface Requires {
-  Require[] value() default {};
   
+  Require[] value() default {};
   
   /**
    * The default asset location used by the contained assets when no location

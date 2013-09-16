@@ -34,10 +34,14 @@ public abstract class ModuleMetaData {
 
   /** The amd source path. */
   private final String path;
+  
+  /** The amd group name. */
+  private final String group;
 
-  public ModuleMetaData(String id, String path) {
+  public ModuleMetaData(String id, String path, String group) {
     this.id = id;
     this.path = path;
+    this.group = group;
   }
 
   public String getId() {
@@ -46,6 +50,10 @@ public abstract class ModuleMetaData {
   
   public String getPath() {
     return path;
+  }
+  
+  public String getGroup() {
+    return group;
   }
 
   public abstract AssetLocation getLocation();
@@ -58,8 +66,8 @@ public abstract class ModuleMetaData {
     /** The adapter to adapt script. */
     private final String adapter;
 
-    public Define(String name, String path, String adapter) {
-      super(name, path);
+    public Define(String name, String path, String adapter, String group) {
+      super(name, path, group);
       this.dependencies = new LinkedHashMap<String, AMDDependency>();
       this.adapter = adapter;
     }
@@ -87,8 +95,8 @@ public abstract class ModuleMetaData {
     /** The amd location. */
     final AssetLocation location;
 
-    public Require(String name, String path, AssetLocation location) {
-      super(name, path);
+    public Require(String name, String path, AssetLocation location, String group) {
+      super(name, path, group);
       this.location = location;
     }
 

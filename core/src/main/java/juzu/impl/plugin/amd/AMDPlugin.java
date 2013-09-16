@@ -123,9 +123,10 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
 
         //
         String adapter = module.getString("adapter");
+        String group = module.getString("group");
 
         //
-        ModuleMetaData.Define descriptor = new ModuleMetaData.Define(name, value, adapter);
+        ModuleMetaData.Define descriptor = new ModuleMetaData.Define(name, value, adapter, group);
         if (dependencies != null && !dependencies.isEmpty()) {
           for (JSON dependency : dependencies) {
             String depName = dependency.getString("id");
@@ -159,9 +160,12 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
         if (!value.startsWith("/") && location == AssetLocation.APPLICATION) {
           value = "/" + application.getPackageName().replace('.', '/') + "/" + packageName.replace('.', '/') + "/" + value;
         }
+        
+        //
+        String group = module.getString("group");
 
         //
-        defines.add(new ModuleMetaData.Require(name, value, location));
+        defines.add(new ModuleMetaData.Require(name, value, location, group));
       }
     }
     return defines;
@@ -192,7 +196,6 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
   }
 
   private Module[] process(List<? extends ModuleMetaData> modules, ModuleManager manager) throws Exception {
-    ArrayList<Module> assets = new ArrayList<Module>();
     for (ModuleMetaData module : modules) {
 
       // Validate assets
@@ -217,13 +220,10 @@ public class AMDPlugin extends ApplicationPlugin implements RequestFilter {
         url = null;
       }
 
-      //
-      Module id = manager.addAMD(module, url);
-      assets.add(id);
+      manager.addAMD(module, url);
     }
 
-    //
-    return assets.toArray(new Module[assets.size()]);
+    return manager.getModules();
   }
 
   public void invoke(Request request) {

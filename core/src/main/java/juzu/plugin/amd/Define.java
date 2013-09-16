@@ -36,6 +36,8 @@ public @interface Define {
   
   String adapter() default "";
   
+  String group() default "";
+  
   Dependency[] dependencies() default {};
 
 }

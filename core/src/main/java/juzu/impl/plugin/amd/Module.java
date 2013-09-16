@@ -16,6 +16,8 @@
 
 package juzu.impl.plugin.amd;
 
+import java.net.URL;
+
 import juzu.PropertyType;
 import juzu.asset.AssetLocation;
 
@@ -37,11 +39,19 @@ public class Module {
 
   /** The module URI. */
   final String uri;
+  
+  /** . */
+  final String group;
+  
+  /** . */
+  final URL url;
 
-  public Module(String id, AssetLocation location, String uri) {
+  public Module(String id, AssetLocation location, String uri, String group, URL url) {
     this.id = id;
     this.location = location;
     this.uri = uri;
+    this.group = group;
+    this.url = url;
   }
 
   public String getId() {
@@ -54,5 +64,23 @@ public class Module {
 
   public String getUri() {
     return uri;
+  }
+  
+  public String getGroup() {
+    return group;
+  }
+  
+  public URL getURL() {
+    return url;
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) return true;
+    else if (obj instanceof Module) {
+      Module that = (Module)obj;
+      return that.id.equals(id) && that.location.equals(location) && that.uri.equals(uri) && that.url.equals(url);
+    }
+    return false;
   }
 }
