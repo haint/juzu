@@ -1,0 +1,176 @@
+http://shiro.apache.org[The Apache Shiro] is a powerful and easy-to-use Java security framework. Therefore, Juzu provides a Shiro plugin that integrates http://shiro.apache.org/core.html[Apache Shiro core]
+to help Juzu application is easier to perform authentication and authorization. This plugins works both the servlet bridge and portlet bridge. 
+
+== The features supported
+
+	* http://shiro.apache.org/configuration.html[Configuration]
+	* Authentication
+	* Authorization
+	* Remember Me (Servlet only)
+	* Multiple Realms
+	
+== Configuration
+
+If the application is deployed in a system non-existed http://shiro.apache.org/static/current/apidocs/org/apache/shiro/mgt/SecurityManager.html[SecurityManager], then this plugin will initialize a http://shiro.apache.org/static/current/apidocs/org/apache/shiro/mgt/DefaultSecurityManager.html[DefaultSecurityManager] for each applications.
+Otherwise it uses the system SecurityManager provided.
+
+[source,java]
+----
+@juzu.Application
+@juzu.plugin.shiro.Shiro
+package org.sample.shiro;
+----
+
+Besides the application also can load a http://shiro.apache.org/configuration.html[INI] file to initialize its SecurityManager.
+
+.For load from APPLICATION
+[source,java]
+----
+@juzu.Application 
+@juzu.plugin.shiro.Shiro(config = @juzu.plugin.shiro.Configuration("/shiro.ini"))
+package org.sample.shiro;
+----
+
+.For load from SERVER
+[source,java]
+----
+@juzu.Application
+@juzu.plugin.shiro.Shiro(config = @juzu.plugin.shiro.Configuration("/WEB-INF/shiro.ini"), location = juzu.asset.AssetLocation.SERVER)
+package org.sample.shiro;
+----
+
+== Authentication
+
+This plugin uses +@juzu.plugin.shiro.Login+ and +@juzu.plugin.shiro.Logout+ to annotate controller methods which perform login or logout operator.
+The +@juzu.plugin.shiro.Login+ uses a set of +username+, +password+, +rememberMe+ use to specify parameters name was serialized
+
+----
+<form action="@{Controller.doLogin()} method="POST">
+	Username:<input type="text" name="uname" />
+	Password:<input type="password" name="pwd" />
+	<input type="checkbox" name="remember" />Remember Me
+	<input type="submit" value="Submit" />
+</form>
+----
+
+[source,java]
+----	
+@Action
+@Login(username="uname", password="pwd", rememberMe="remember")
+public void doLogin(String uname, String pwd, String remember, AuthenticationException e) 
+{
+....
+}
+----  
+
+NOTE: The plugin will throw an http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authc/AuthenticationException.html[AuthenticationException] and bind into a corresponding +ContexualParamater+ if the controller method handle exception.
+Otherwise the http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authc/AuthenticationException.html[AuthenticationException] will encounter while method invoked.
+ 
+
+== Authorization
+The plugin use http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authz/annotation/package-summary.html[annotatios] provide by Apache Shiro to perform authorization. The +@RequiresGuest+, +@RequiresUser+, +@RequiresAuthentication+
+can annotate at controller level. The +@RequiresRoles+ and +@RequiresPermissions+ can annotate only at method level.
+
+NOTE: The application encounters +CompilationException+ in phase compile If the +@RequiresGuest+, +@RequiresUser+, +@RequiresAuthentication+ annotate duplicate at controller or method. 
+
+[source,java]
+----
+@View
+@RequiresUser @RequiresRoles("foo")
+public void foo(AuthorizationException e)
+{
+....
+}
+----
+
+NOTE: Same as authentication. The plugin will throw an http://shiro.apache.org/static/current/apidocs/org/apache/shiro/authz/AuthorizationException.html[AuthorizationException] if the application is not handled exception by +ContexualParameter+
+
+== Remember Me
+
+The plugin forked http://shiro.apache.org/static/current/apidocs/org/apache/shiro/web/mgt/CookieRememberMeManager.html[CookieRememberMeManager] to perform remember subject. Currently, it supports only for Juzu servlet application.
+
+[source,java]
+----
+@juzu.Application 
+@juzu.plugin.shiro.Shiro(rememberMe = true)
+package org.sample.shiro;
+----
+
+----
+<form action="@{Controller.doLogin()} method="POST">
+	Username:<input type="text" name="uname" />
+	Password:<input type="password" name="pwd" />
+	<input type="checkbox" name="remember" />Remember Me
+	<input type="submit" value="Submit" />
+</form>
+----
+
+[source,java]	
+@Action
+@Login(username="uname", password="pwd", rememberMe="remember")
+public void doLogin(String uname, String pwd, String remember, AuthenticationException e) 
+{
+....
+}
+----
+
+== Multiple Realms
+The plugin provided an easy way to add realm to current +SecurityManager+ by annotation:
+
+[source,java]
+----
+import org.apache.shiro.realm.AuthorizingRealm;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({})
+public @interface Realm
+{
+   Class<? extends AuthorizingRealm> value();
+   
+   String name() default "";
+}
+----
+
+.Usage
+[source,java]
+----
+public class SimpleRealm extends AuthorizingRealm
+{
+   @Override
+   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
+   {
+     ...
+   }
+   
+   @Override
+   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException
+   {
+     ...
+   }
+}
+----
+
+[source,java]
+----
+public class OtherRealm extends AuthorizingRealm
+{
+   ...
+}
+---- 
+
+[source,java]
+----
+@juzu.Application 
+@juzu.plugin.shiro.Shiro(realms = {
+	@Realm(value = SimpleRealm.class, name = "simple"),
+	@Realm(value = OtherRealm.class, name = "other") 
+})
+package plugin.shiro.realms;
+----
+
+NOTE: If the application use +Guice+ or +Spring+, it should use more +@Bindinds+ to bind the reamls.
+
+[source,java]
+----
+@juzu.plugin.binding.Bindings(value = {@Binding(value = {SimpleRealm.class,OtherRealm.class})
+----

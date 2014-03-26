@@ -214,6 +214,10 @@ public class Request implements ScopingContext {
   private ContextLifeCycle contextLifeCycle;
 
   public void invoke() {
+    this.invoke(new RequestContext(this, method));
+  }
+  
+  public void invoke(RequestContext context) {
     boolean set = current.get() == null;
     try {
 
@@ -241,7 +245,7 @@ public class Request implements ScopingContext {
       else if (index == filters.size()) {
 
         // Dispatch request
-        Response response = dispatch(this, controllerPlugin.getInjectionContext());
+        Response response = dispatch(context, controllerPlugin.getInjectionContext());
         if (response != null) {
           setResponse(response);
         }
@@ -326,23 +330,20 @@ public class Request implements ScopingContext {
       request.setArgument(parameter, instance);
     }
   }
-
-  private <B, I> Response dispatch(Request request, InjectionContext<B, I> manager) {
-
-    // Create context
-    RequestContext context = new RequestContext(this, method);
+  
+  private <B, I> Response dispatch(RequestContext context, InjectionContext<B, I> manager) {
 
     //
     for (ControlParameter parameter : method.getParameters()) {
       if (parameter instanceof ContextualParameter) {
         ContextualParameter contextualParameter = (ContextualParameter)parameter;
-        tryInject(request, contextualParameter, RequestContext.class, context);
-        tryInject(request, contextualParameter, HttpContext.class, request.getHttpContext());
-        tryInject(request, contextualParameter, SecurityContext.class, request.getSecurityContext());
-        tryInject(request, contextualParameter, ApplicationContext.class, request.getApplicationContext());
-        tryInject(request, contextualParameter, UserContext.class, request.getUserContext());
+        tryInject(this, contextualParameter, RequestContext.class, context);
+        tryInject(this, contextualParameter, HttpContext.class, this.getHttpContext());
+        tryInject(this, contextualParameter, SecurityContext.class, this.getSecurityContext());
+        tryInject(this, contextualParameter, ApplicationContext.class, this.getApplicationContext());
+        tryInject(this, contextualParameter, UserContext.class, this.getUserContext());
         if (bridge.getPhase() == Phase.RESOURCE || bridge.getPhase() == Phase.ACTION) {
-          tryInject(request, contextualParameter, ClientContext.class, request.getClientContext());
+          tryInject(this, contextualParameter, ClientContext.class, this.getClientContext());
         }
       }
     }

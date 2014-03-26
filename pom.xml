@@ -246,11 +246,23 @@
       <dependency>
         <groupId>org.juzu</groupId>
         <artifactId>juzu-plugins-webjars</artifactId>
+				<version>0.8.0</version>
+			</dependency>
+      <dependency>
+        <groupId>org.juzu</groupId>
+        <artifactId>juzu-plugins-webjars</artifactId>
+        <classifier>sources</classifier>
+        <version>0.8.0</version>
+      </dependency>
+
+			<dependency>
+        <groupId>org.juzu</groupId>
+        <artifactId>juzu-plugins-shiro</artifactId>
         <version>0.8.0</version>
       </dependency>
       <dependency>
         <groupId>org.juzu</groupId>
-        <artifactId>juzu-plugins-webjars</artifactId>
+        <artifactId>juzu-plugins-shiro</artifactId>
         <classifier>sources</classifier>
         <version>0.8.0</version>
       </dependency>
